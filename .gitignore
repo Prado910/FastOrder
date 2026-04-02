@@ -1,0 +1,5 @@
+estructura.txt
+fuente_proyecto.txt
+__pycache__/
+*.pyc
+.env
