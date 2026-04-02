@@ -8,6 +8,7 @@ from src.models.pedido import Pedido
 from src.models.detalle_pedido import DetallePedido
 from src.repositories.mesa_repository import obtener_mesa_por_id
 from src.repositories.producto_repository import obtener_producto_por_id
+from src.repositories.usuario_repository import obtener_mesero_activo_por_id
 from src.repositories.pedido_repository import (
     crear_pedido,
     crear_detalle_pedido,
@@ -26,6 +27,14 @@ def registrar_pedido(db: Session, payload: PedidoCreate):
     # Un pedido debe tener un mesero asignado
     if not payload.id_usuario_mesero:
         raise HTTPException(status_code=400, detail="El pedido debe tener un mesero asignado.")
+    
+    # El usuario asignado debe existir, estar activo y tener rol de mesero
+    mesero = obtener_mesero_activo_por_id(db, payload.id_usuario_mesero)
+    if not mesero:
+        raise HTTPException(
+            status_code=404,
+            detail="El mesero no existe, no está activo o no tiene el rol correcto."
+        )
 
     # Se valida que la mesa exista y esté libre antes de crear el pedido
     mesa = obtener_mesa_por_id(db, payload.id_mesa)

@@ -3,3 +3,4 @@ fuente_proyecto.txt
 __pycache__/
 *.pyc
 .env
+exportar_fuente.ps1
