@@ -48,12 +48,24 @@ export default function App() {
     setPaso("confirmado");
   }
 
+  function cerrarSesion() {
+    setMesaSeleccionada(null);
+    setItemsPedido([]);
+    setPedidoConfirmado(null);
+    setPaso("dashboard");
+  }
+
   if (paso === "dashboard") {
     return <DashboardMesero onNuevoPedido={irANuevoPedido} />;
   }
 
   if (paso === "mesas") {
-    return <SeleccionarMesa onMesaSeleccionada={manejarMesaSeleccionada} />;
+    return (
+      <SeleccionarMesa
+        onMesaSeleccionada={manejarMesaSeleccionada}
+        onVolver={volverADashboard}
+      />
+    );
   }
 
   if (paso === "productos") {
@@ -64,6 +76,7 @@ export default function App() {
         setItemsPedido={setItemsPedido}
         onVolver={volverADashboard}
         onContinuarResumen={irAResumen}
+        onCerrarSesion={cerrarSesion}
       />
     );
   }
@@ -73,13 +86,14 @@ export default function App() {
       <ResumenPedido
         mesaSeleccionada={mesaSeleccionada}
         itemsPedido={itemsPedido}
+        setItemsPedido={setItemsPedido}
         onVolverAlMenu={volverAProductos}
         onEditarMesa={editarMesa}
         onPedidoConfirmado={manejarPedidoConfirmado}
+        onCerrarSesion={cerrarSesion}
       />
     );
   }
-
   return (
     <PedidoConfirmado
       pedido={pedidoConfirmado}

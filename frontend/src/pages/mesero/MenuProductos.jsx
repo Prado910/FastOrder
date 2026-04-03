@@ -1,7 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { getProductos } from "../../services/api";
+import HeaderMesero from "../../components/mesero/HeaderMesero";
 import ProductoCard from "../../components/mesero/ProductoCard";
-import PedidoSidebar from "../../components/mesero/PedidoSidebar";
+
+const CATEGORIAS = ["ENTRADAS", "HAMBURGUESAS", "BEBIDAS", "ALTERNOS"];
+
+function formatearCategoria(nombre) {
+    if (!nombre) return "";
+    return nombre.charAt(0) + nombre.slice(1).toLowerCase();
+}
+
+function obtenerCategoriaProducto(producto) {
+    return String(producto.categoria || producto.nombre_categoria || "")
+        .trim()
+        .toUpperCase();
+}
 
 export default function MenuProductos({
     mesaSeleccionada,
@@ -9,6 +22,7 @@ export default function MenuProductos({
     setItemsPedido,
     onVolver,
     onContinuarResumen,
+    onCerrarSesion,
 }) {
     const [productos, setProductos] = useState([]);
     const [busqueda, setBusqueda] = useState("");
@@ -17,9 +31,9 @@ export default function MenuProductos({
     const [productoSeleccionado, setProductoSeleccionado] = useState(null);
     const [cantidad, setCantidad] = useState(1);
     const [observacion, setObservacion] = useState("");
+    const [categoriaActiva, setCategoriaActiva] = useState("ENTRADAS");
 
     useEffect(() => {
-        // Carga los productos disponibles al abrir la vista
         async function cargarProductos() {
             try {
                 setLoading(true);
@@ -38,23 +52,23 @@ export default function MenuProductos({
 
     const productosFiltrados = useMemo(() => {
         const texto = busqueda.trim().toLowerCase();
-        if (!texto) return productos;
 
-        // Filtra por nombre y descripción para facilitar la búsqueda en el menú
-        return productos.filter((producto) =>
-            `${producto.nombre} ${producto.descripcion || ""}`
-                .toLowerCase()
-                .includes(texto)
-        );
-    }, [productos, busqueda]);
+        return productos.filter((producto) => {
+            const coincideBusqueda =
+                !texto ||
+                `${producto.nombre} ${producto.descripcion || ""}`
+                    .toLowerCase()
+                    .includes(texto);
 
-    const totalPedido = useMemo(() => {
-        // Calcula el total acumulado del pedido actual
-        return itemsPedido.reduce((acc, item) => acc + Number(item.subtotal), 0);
-    }, [itemsPedido]);
+            const categoriaProducto = obtenerCategoriaProducto(producto);
+            const coincideCategoria =
+                !categoriaActiva || categoriaProducto === categoriaActiva;
+
+            return coincideBusqueda && coincideCategoria;
+        });
+    }, [productos, busqueda, categoriaActiva]);
 
     function abrirPersonalizacion(producto) {
-        // Abre el modal y reinicia la personalización del producto seleccionado
         setProductoSeleccionado(producto);
         setCantidad(1);
         setObservacion("");
@@ -70,9 +84,7 @@ export default function MenuProductos({
         if (!productoSeleccionado) return;
 
         const cantidadValida = Number(cantidad);
-        if (!Number.isInteger(cantidadValida) || cantidadValida < 1) {
-            return;
-        }
+        if (!Number.isInteger(cantidadValida) || cantidadValida < 1) return;
 
         const subtotal = Number(productoSeleccionado.precio) * cantidadValida;
 
@@ -85,9 +97,6 @@ export default function MenuProductos({
             observacion_item: observacion.trim(),
         };
 
-
-
-        // Agrega el producto al pedido actual y cierra el modal
         setItemsPedido((prev) => [...prev, nuevoItem]);
         cerrarPersonalizacion();
     }
@@ -97,23 +106,33 @@ export default function MenuProductos({
     }
 
     return (
-        <div className="page-container">
-            <div className="page-grid">
-                <div>
-                    <header className="section-header">
-                        <button type="button" onClick={onVolver} className="btn">
-                            Volver
-                        </button>
+        <div className="dashboard-shell">
+            <HeaderMesero onCerrarSesion={onCerrarSesion} />
 
-                        <div>
-                            <h1 className="page-title title-md">Menú de Productos</h1>
-                            <p className="page-subtitle">
-                                Mesa {mesaSeleccionada.numero_mesa} - Selecciona los productos del
-                                pedido
-                            </p>
-                        </div>
-                    </header>
+            <main className="page-container">
+                <header className="menu-header">
+                    <button type="button" onClick={onVolver} className="back-link">
+                        ← Volver
+                    </button>
 
+                    <div className="menu-header-copy">
+                        <h1 className="page-title title-md">Menú de Productos</h1>
+                        <p className="page-subtitle">
+                            Mesa {mesaSeleccionada.numero_mesa} - Selecciona los productos del pedido
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        className="btn btn-primary menu-order-button"
+                        onClick={onContinuarResumen}
+                        disabled={itemsPedido.length === 0}
+                    >
+                        Ver Pedido ({itemsPedido.length})
+                    </button>
+                </header>
+
+                <div className="search-input-wrap">
                     <input
                         type="text"
                         placeholder="Buscar productos..."
@@ -121,36 +140,42 @@ export default function MenuProductos({
                         onChange={(e) => setBusqueda(e.target.value)}
                         className="search-input"
                     />
-
-                    {loading && <p>Cargando productos...</p>}
-                    {error && <p className="error-text">{error}</p>}
-
-                    {!loading && !error && productosFiltrados.length === 0 && (
-                        <div className="empty-state">
-                            <p>No se encontraron productos con esa búsqueda.</p>
-                        </div>
-                    )}
-
-                    {!loading && !error && productosFiltrados.length > 0 && (
-                        <div className="grid-auto">
-                            {productosFiltrados.map((producto) => (
-                                <ProductoCard
-                                    key={producto.id_producto}
-                                    producto={producto}
-                                    onAgregar={abrirPersonalizacion}
-                                />
-                            ))}
-                        </div>
-                    )}
                 </div>
 
-                <PedidoSidebar
-                    mesaSeleccionada={mesaSeleccionada}
-                    itemsPedido={itemsPedido}
-                    totalPedido={totalPedido}
-                    onContinuarResumen={onContinuarResumen}
-                />
-            </div>
+                <div className="menu-tabs">
+                    {CATEGORIAS.map((categoria) => (
+                        <button
+                            key={categoria}
+                            type="button"
+                            className={categoriaActiva === categoria ? "menu-tab active" : "menu-tab"}
+                            onClick={() => setCategoriaActiva(categoria)}
+                        >
+                            {formatearCategoria(categoria)}
+                        </button>
+                    ))}
+                </div>
+
+                {loading && <p>Cargando productos...</p>}
+                {error && <p className="error-text">{error}</p>}
+
+                {!loading && !error && productosFiltrados.length === 0 && (
+                    <div className="empty-state">
+                        <p>No se encontraron productos para esta categoría o búsqueda.</p>
+                    </div>
+                )}
+
+                {!loading && !error && productosFiltrados.length > 0 && (
+                    <section className="productos-grid">
+                        {productosFiltrados.map((producto) => (
+                            <ProductoCard
+                                key={producto.id_producto}
+                                producto={producto}
+                                onAgregar={abrirPersonalizacion}
+                            />
+                        ))}
+                    </section>
+                )}
+            </main>
 
             {productoSeleccionado && (
                 <div className="modal-overlay">
@@ -160,8 +185,9 @@ export default function MenuProductos({
                         <p>
                             <strong>{productoSeleccionado.nombre}</strong>
                         </p>
+
                         <p className="text-muted">
-                            ${Number(productoSeleccionado.precio).toFixed(2)}
+                            ${Number(productoSeleccionado.precio).toLocaleString("es-CO")}
                         </p>
 
                         <label className="field-label">
@@ -188,7 +214,9 @@ export default function MenuProductos({
 
                         <p className="total-text">
                             Subtotal: $
-                            {(Number(productoSeleccionado.precio) * Number(cantidad)).toFixed(2)}
+                            {(
+                                Number(productoSeleccionado.precio) * Number(cantidad || 0)
+                            ).toLocaleString("es-CO")}
                         </p>
 
                         <div className="modal-actions">

@@ -19,6 +19,8 @@ def get_productos(db: Session = Depends(get_db)):
             "nombre": producto.nombre,
             "descripcion": producto.descripcion,
             "precio": producto.precio,
+            "id_categoria": producto.id_categoria,
+            "categoria": producto.categoria.nombre,
         }
         for producto in productos
     ]
