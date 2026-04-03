@@ -1,6 +1,53 @@
+# =========================
+# Variables de entorno / secretos
+# =========================
+backend/.env
+.env
+.env.*
+!.env.example
+
+# =========================
+# Python / backend
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+.venv/
+venv/
+env/
+ENV/
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+.coverage
+.coverage.*
+htmlcov/
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# IDE / editor
+# =========================
+.vscode/
+.idea/
+*.suo
+*.swp
+*.tmp
+
+# =========================
+# Sistema operativo
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
 estructura.txt
 fuente_proyecto.txt
-__pycache__/
-*.pyc
-.env
 exportar_fuente.ps1

@@ -7,7 +7,7 @@ from src.repositories.producto_repository import listar_productos_disponibles
 router = APIRouter(prefix="/productos")
 
 
-@router.get("/")
+@router.get("")
 def get_productos(db: Session = Depends(get_db)):
     # Obtiene los productos que están disponibles para ser pedidos
     productos = listar_productos_disponibles(db)

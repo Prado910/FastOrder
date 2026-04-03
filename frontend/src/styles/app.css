@@ -1,0 +1,354 @@
+/* ===== Reset básico ===== */
+* {
+    box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    font-family: Arial, sans-serif;
+    background: #f5f6f8;
+    color: #1f2937;
+}
+
+/* ===== Layout ===== */
+.page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.page-container.narrow {
+    max-width: 1000px;
+}
+
+.page-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+}
+
+.grid-auto {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+/* ===== Header ===== */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.brand {
+    margin: 0;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.user-text {
+    margin: 6px 0 0 0;
+    color: #6b7280;
+}
+
+/* ===== Hero / títulos ===== */
+.page-hero,
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.page-title {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 700;
+}
+
+.page-subtitle {
+    margin-top: 8px;
+    color: #6b7280;
+}
+
+.section-title {
+    margin: 0 0 16px 0;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* ===== Cards ===== */
+.card {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: #ffffff;
+    padding: 18px;
+}
+
+.metric-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: #ffffff;
+    padding: 18px;
+}
+
+.metric-label {
+    margin: 0;
+    color: #6b7280;
+}
+
+.metric-value {
+    margin: 10px 0 0 0;
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.sidebar-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: #fafafa;
+    padding: 18px;
+    align-self: start;
+    position: sticky;
+    top: 24px;
+}
+
+.empty-state {
+    padding: 32px 16px;
+    text-align: center;
+    color: #6b7280;
+    border: 1px dashed #d1d5db;
+    border-radius: 12px;
+    background: #fafafa;
+}
+
+/* ===== Botones ===== */
+.btn {
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: #111827;
+    border-radius: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn:hover {
+    background: #f9fafb;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background: #111827;
+    color: #ffffff;
+    border-color: #111827;
+    font-weight: 700;
+}
+
+.btn-primary:hover {
+    background: #1f2937;
+}
+
+.btn-block {
+    width: 100%;
+}
+
+/* ===== Inputs ===== */
+.input,
+.textarea,
+.search-input {
+    width: 100%;
+    margin-top: 8px;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    font-size: 14px;
+}
+
+.search-input {
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.textarea {
+    resize: vertical;
+}
+
+.field-label {
+    display: block;
+    margin-top: 16px;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+/* ===== Mesas ===== */
+.mesa-badge {
+    display: inline-block;
+    margin-bottom: 12px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #f3f4f6;
+    font-size: 14px;
+}
+
+.mesa-title {
+    margin: 0 0 8px 0;
+    font-size: 20px;
+}
+
+.mesa-text {
+    margin: 0;
+    color: #6b7280;
+}
+
+.mesa-action {
+    display: inline-block;
+    margin-top: 12px;
+    font-weight: 700;
+}
+
+/* ===== Productos ===== */
+.producto-title {
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 18px;
+}
+
+.producto-description {
+    min-height: 40px;
+    color: #6b7280;
+}
+
+.producto-price {
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+/* ===== Pedido ===== */
+.item-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.item-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.item-note {
+    margin-top: 4px;
+    color: #6b7280;
+    font-style: italic;
+}
+
+.total-text {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+/* ===== Modal ===== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.modal-card {
+    width: 100%;
+    max-width: 480px;
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 24px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+/* ===== Mensajes ===== */
+.error-text {
+    color: #dc2626;
+    margin-bottom: 16px;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 900px) {
+    .page-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar-card {
+        position: static;
+    }
+
+    .page-hero,
+    .section-header,
+    .app-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+.actions-column {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.mb-24 {
+    margin-bottom: 24px;
+}
+
+.mb-8 {
+    margin-bottom: 8px;
+}
+
+.title-sm {
+    font-size: 22px;
+}
+
+.title-md {
+    font-size: 28px;
+}
+
+.text-muted {
+    color: #6b7280;
+}
+
+.price-strong {
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.mt-24 {
+    margin-top: 24px;
+}
+
+.mesa-card-button {
+    cursor: pointer;
+    text-align: left;
+}
