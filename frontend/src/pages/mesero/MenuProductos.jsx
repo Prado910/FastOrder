@@ -60,6 +60,12 @@ export default function MenuProductos({
         setObservacion("");
     }
 
+    function cerrarPersonalizacion() {
+        setProductoSeleccionado(null);
+        setCantidad(1);
+        setObservacion("");
+    }
+
     function agregarAlPedido() {
         if (!productoSeleccionado) return;
 
@@ -79,11 +85,11 @@ export default function MenuProductos({
             observacion_item: observacion.trim(),
         };
 
+
+
         // Agrega el producto al pedido actual y cierra el modal
         setItemsPedido((prev) => [...prev, nuevoItem]);
-        setProductoSeleccionado(null);
-        setCantidad(1);
-        setObservacion("");
+        cerrarPersonalizacion();
     }
 
     if (!mesaSeleccionada) {
