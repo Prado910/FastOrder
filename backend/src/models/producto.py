@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Numeric, ForeignKey
 from sqlalchemy.orm import relationship
 
 from src.db import Base
+from src.models.categoria_producto import CategoriaProducto
 
 
 class Producto(Base):
@@ -15,4 +16,4 @@ class Producto(Base):
     disponible = Column("DISPONIBLE", String(1), nullable=False)
 
     # Relación con la categoría a la que pertenece el producto
-    categoria = relationship("CategoriaProducto", back_populates="productos")
+    categoria = relationship(CategoriaProducto, back_populates="productos")
