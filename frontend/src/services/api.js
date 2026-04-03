@@ -16,6 +16,12 @@ async function handleResponse(response) {
     return response.json();
 }
 
+// Obtiene todas las mesas (sin filtrar por estado)
+export async function getMesas() {
+    const response = await fetch(`${API_BASE_URL}/mesas`);
+    return handleResponse(response);
+}
+
 // Obtiene las mesas disponibles para asignar un pedido
 export async function getMesasDisponibles() {
     const response = await fetch(`${API_BASE_URL}/mesas/disponibles`);

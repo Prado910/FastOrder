@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import HeaderMesero from "../../components/mesero/HeaderMesero";
 import MesaCard from "../../components/mesero/MesaCard";
 
-import { getMesasDisponibles } from "../../services/api";
+import { getMesas } from "../../services/api";
 import backIcon from "../../assets/back.png";
 
 export default function SeleccionarMesa({ onMesaSeleccionada, onVolver, onCerrarSesion }) {
@@ -11,12 +11,12 @@ export default function SeleccionarMesa({ onMesaSeleccionada, onVolver, onCerrar
     const [error, setError] = useState("");
 
     useEffect(() => {
-        // Carga las mesas disponibles al abrir la vista
+        // Carga las mesas al montar el componente
         async function cargarMesas() {
             try {
                 setLoading(true);
                 setError("");
-                const data = await getMesasDisponibles();
+                const data = await getMesas();
                 setMesas(data);
             } catch (err) {
                 setError(err?.message || "No se pudieron cargar las mesas.");
@@ -27,14 +27,6 @@ export default function SeleccionarMesa({ onMesaSeleccionada, onVolver, onCerrar
 
         cargarMesas();
     }, []);
-
-    if (loading) {
-        return <p className="page-container narrow">Cargando mesas disponibles...</p>;
-    }
-
-    if (error) {
-        return <p className="page-container narrow error-text">{error}</p>;
-    }
 
     return (
         <div className="dashboard-shell">
@@ -54,13 +46,13 @@ export default function SeleccionarMesa({ onMesaSeleccionada, onVolver, onCerrar
                     <div>
                         <h1 className="page-title title-md">Seleccionar Mesa</h1>
                         <p className="page-subtitle">
-                            Elige una mesa disponible para el pedido
+                            Elige una mesa para el pedido
                         </p>
                     </div>
                 </header>
 
                 {loading && (
-                    <p className="loading-text">Cargando mesas disponibles...</p>
+                    <p className="loading-text">Cargando mesas...</p>
                 )}
 
                 {!loading && error && (
