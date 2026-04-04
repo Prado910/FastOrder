@@ -70,6 +70,8 @@ export default function MenuProductos({
     }, [productos, busqueda, categoriaActiva]);
 
     function abrirPersonalizacion(producto) {
+        if (producto.disponible !== "S") return;
+
         setProductoSeleccionado(producto);
         setCantidad(1);
         setObservacion("");

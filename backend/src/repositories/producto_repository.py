@@ -4,9 +4,10 @@ from sqlalchemy.orm import Session
 from src.models.producto import Producto
 
 
-def listar_productos_disponibles(db: Session):
-    # Retorna solo los productos marcados como disponibles
-    stmt = select(Producto).where(Producto.disponible == "S").order_by(Producto.nombre)
+def listar_productos_para_menu(db: Session):
+    # Retorna todos los productos visibles en el menú,
+    # tanto disponibles como no disponibles
+    stmt = select(Producto).order_by(Producto.nombre)
     return db.execute(stmt).scalars().all()
 
 

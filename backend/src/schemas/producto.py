@@ -8,3 +8,4 @@ class ProductoResponse(BaseModel):
     precio: Decimal = Field(example="15000.00")
     id_categoria: int
     categoria: str
+    disponible: str

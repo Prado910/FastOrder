@@ -38,7 +38,7 @@ INSERT INTO PRODUCTO (ID_CATEGORIA, NOMBRE, DESCRIPCION, PRECIO, DISPONIBLE)
 VALUES (1, 'Ensalada César', 'Lechuga, crutones y aderezo César', 12.50, 'S');
 
 INSERT INTO PRODUCTO (ID_CATEGORIA, NOMBRE, DESCRIPCION, PRECIO, DISPONIBLE)
-VALUES (3, 'Agua Mineral', 'Bebida sin gas 600 ml', 3.00, 'S');
+VALUES (3, 'Agua Mineral', 'Bebida sin gas 600 ml', 3.00, 'N');
 
 INSERT INTO PRODUCTO (ID_CATEGORIA, NOMBRE, DESCRIPCION, PRECIO, DISPONIBLE)
 VALUES (3, 'Limonada', 'Limonada natural', 4.50, 'S');
