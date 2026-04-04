@@ -5,6 +5,7 @@ import ProductoCard from "../../components/mesero/ProductoCard";
 import shoppingCartWhiteIcon from "../../assets/shopping-cart-white.png";
 
 const CATEGORIAS = ["ENTRADAS", "HAMBURGUESAS", "BEBIDAS", "ALTERNOS"];
+const OBSERVACION_REGEX = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s.,;:()\-]*$/;
 
 function formatearCategoria(nombre) {
     if (!nombre) return "";
@@ -34,6 +35,7 @@ export default function MenuProductos({
     const [observacion, setObservacion] = useState("");
     const [categoriaActiva, setCategoriaActiva] = useState("ENTRADAS");
     const [errorCantidad, setErrorCantidad] = useState("");
+    const [errorObservacion, setErrorObservacion] = useState("");
 
     useEffect(() => {
         async function cargarProductos() {
@@ -77,6 +79,7 @@ export default function MenuProductos({
         setCantidad(1);
         setObservacion("");
         setErrorCantidad("");
+        setErrorObservacion("");
     }
 
     function cerrarPersonalizacion() {
@@ -84,6 +87,7 @@ export default function MenuProductos({
         setCantidad(1);
         setObservacion("");
         setErrorCantidad("");
+        setErrorObservacion("");
     }
 
     function agregarAlPedido() {
@@ -94,8 +98,14 @@ export default function MenuProductos({
             setErrorCantidad("No puedes agregar un producto con cantidad cero o menor.");
             return;
         }
-
         setErrorCantidad("");
+
+        const notaLimpia = observacion.trim();
+        if (notaLimpia && !OBSERVACION_REGEX.test(notaLimpia)) {
+            setErrorObservacion("La nota contiene caracteres no permitidos. Usa solo letras, números y signos básicos.");
+            return;
+        }
+        setErrorObservacion("");
 
         const subtotal = Number(productoSeleccionado.precio) * cantidadValida;
 
@@ -105,7 +115,7 @@ export default function MenuProductos({
             precio_unitario: Number(productoSeleccionado.precio),
             cantidad: cantidadValida,
             subtotal,
-            observacion_item: observacion.trim(),
+            observacion_item: notaLimpia || null,
         };
 
         setItemsPedido((prev) => [...prev, nuevoItem]);
@@ -227,15 +237,30 @@ export default function MenuProductos({
                         )}
 
                         <label className="field-label">
-                            Observaciones
+                            Nota especial
                             <textarea
-                                placeholder="Ej: sin sal, término medio, etc."
+                                placeholder="Ej. sin cebolla, término medio, etc."
                                 value={observacion}
-                                onChange={(e) => setObservacion(e.target.value)}
+                                onChange={(e) => {
+                                    const nuevoValor = e.target.value;
+                                    setObservacion(nuevoValor);
+
+                                    if (nuevoValor.trim() && !OBSERVACION_REGEX.test(nuevoValor.trim())) {
+                                        setErrorObservacion(
+                                            "La nota contiene caracteres no permitidos. Usa solo letras, números y signos básicos."
+                                        );
+                                    } else {
+                                        setErrorObservacion("");
+                                    }
+                                }}
                                 rows="4"
                                 className="textarea"
                             />
                         </label>
+
+                        {errorObservacion && (
+                            <p className="error-text">{errorObservacion}</p>
+                        )}
 
                         <p className="total-text">
                             Subtotal: $
@@ -252,7 +277,10 @@ export default function MenuProductos({
                                 type="button"
                                 className="btn btn-primary"
                                 onClick={agregarAlPedido}
-                                disabled={!Number.isInteger(Number(cantidad)) || Number(cantidad) <= 0}
+                                disabled={
+                                    (!Number.isInteger(Number(cantidad)) || Number(cantidad) <= 0) ||
+                                    (!!observacion.trim() && !OBSERVACION_REGEX.test(observacion.trim()))
+                                }
                             >
                                 Agregar al pedido
                             </button>
