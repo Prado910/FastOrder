@@ -621,6 +621,29 @@ body {
     box-shadow: 0 8px 22px rgba(40, 20, 20, 0.04);
 }
 
+.producto-card-disabled {
+    opacity: 0.65;
+    border: 1px solid #d6b0b0;
+    background-color: #f8f1f1;
+}
+
+.producto-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.producto-badge-no-disponible {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #ffe5e5;
+    color: #b42318;
+    white-space: nowrap;
+}
+
 .producto-title {
     margin: 0 0 24px;
     font-size: 20px;
@@ -630,8 +653,9 @@ body {
 }
 
 .producto-description {
-    min-height: 40px;
+    margin-top: 6px;
     color: #6b7280;
+    font-size: 14px;
 }
 
 .producto-price {
@@ -657,6 +681,11 @@ body {
 
 .producto-add-button:hover {
     background: #8e1f31;
+}
+
+.producto-add-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
 /* Pedido */
