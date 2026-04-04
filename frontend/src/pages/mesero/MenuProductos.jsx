@@ -33,6 +33,7 @@ export default function MenuProductos({
     const [cantidad, setCantidad] = useState(1);
     const [observacion, setObservacion] = useState("");
     const [categoriaActiva, setCategoriaActiva] = useState("ENTRADAS");
+    const [errorCantidad, setErrorCantidad] = useState("");
 
     useEffect(() => {
         async function cargarProductos() {
@@ -75,19 +76,26 @@ export default function MenuProductos({
         setProductoSeleccionado(producto);
         setCantidad(1);
         setObservacion("");
+        setErrorCantidad("");
     }
 
     function cerrarPersonalizacion() {
         setProductoSeleccionado(null);
         setCantidad(1);
         setObservacion("");
+        setErrorCantidad("");
     }
 
     function agregarAlPedido() {
         if (!productoSeleccionado) return;
 
         const cantidadValida = Number(cantidad);
-        if (!Number.isInteger(cantidadValida) || cantidadValida < 1) return;
+        if (!Number.isInteger(cantidadValida) || cantidadValida <= 0) {
+            setErrorCantidad("No puedes agregar un producto con cantidad cero o menor.");
+            return;
+        }
+
+        setErrorCantidad("");
 
         const subtotal = Number(productoSeleccionado.precio) * cantidadValida;
 
@@ -200,10 +208,23 @@ export default function MenuProductos({
                                 type="number"
                                 min="1"
                                 value={cantidad}
-                                onChange={(e) => setCantidad(Number(e.target.value))}
+                                onChange={(e) => {
+                                    const nuevoValor = Number(e.target.value);
+                                    setCantidad(nuevoValor);
+
+                                    if (!Number.isInteger(nuevoValor) || nuevoValor <= 0) {
+                                        setErrorCantidad("La cantidad debe ser mayor que cero.");
+                                    } else {
+                                        setErrorCantidad("");
+                                    }
+                                }}
                                 className="input"
                             />
                         </label>
+
+                        {errorCantidad && (
+                            <p className="error-text">{errorCantidad}</p>
+                        )}
 
                         <label className="field-label">
                             Observaciones
@@ -231,6 +252,7 @@ export default function MenuProductos({
                                 type="button"
                                 className="btn btn-primary"
                                 onClick={agregarAlPedido}
+                                disabled={!Number.isInteger(Number(cantidad)) || Number(cantidad) <= 0}
                             >
                                 Agregar al pedido
                             </button>
