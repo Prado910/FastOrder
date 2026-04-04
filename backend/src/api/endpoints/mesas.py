@@ -6,37 +6,14 @@ from src.repositories.mesa_repository import (
     listar_mesas_disponibles,
     listar_mesas_para_seleccion,
 )
+from src.schemas.mesa import MesaResponse
 
 router = APIRouter(prefix="/mesas")
 
-@router.get("")
+@router.get("", response_model=list[MesaResponse])
 def get_mesas(db: Session = Depends(get_db)):
-    # Obtiene la lista de mesas para mostrar en la pantalla de selección
-    mesas = listar_mesas_para_seleccion(db)
+    return listar_mesas_para_seleccion(db)
 
-    # Transforma los objetos ORM en una respuesta JSON simple
-    return [
-        {
-            "id_mesa": mesa.id_mesa,
-            "numero_mesa": mesa.numero_mesa,
-            "capacidad": mesa.capacidad,
-            "estado": mesa.estado,
-        }
-        for mesa in mesas
-    ]
-
-@router.get("/disponibles")
+@router.get("/disponibles", response_model=list[MesaResponse])
 def get_mesas_disponibles(db: Session = Depends(get_db)):
-    # Obtiene la lista de mesas que están disponibles para asignar pedidos
-    mesas = listar_mesas_disponibles(db)
-
-    # Transforma los objetos ORM en una respuesta JSON simple
-    return [
-        {
-            "id_mesa": mesa.id_mesa,
-            "numero_mesa": mesa.numero_mesa,
-            "capacidad": mesa.capacidad,
-            "estado": mesa.estado,
-        }
-        for mesa in mesas
-    ]
+    return listar_mesas_disponibles(db)

@@ -3,12 +3,13 @@ from sqlalchemy.orm import Session
 
 from src.db import get_db
 from src.repositories.producto_repository import listar_productos_disponibles
+from src.schemas.producto import ProductoResponse
 
 router = APIRouter(prefix="/productos")
 
-
-@router.get("")
+@router.get("", response_model=list[ProductoResponse])
 def get_productos(db: Session = Depends(get_db)):
+
     # Obtiene los productos que están disponibles para ser pedidos
     productos = listar_productos_disponibles(db)
 
