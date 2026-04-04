@@ -2,6 +2,9 @@ import { useMemo, useState } from "react";
 import { crearPedido } from "../../services/api";
 import HeaderMesero from "../../components/mesero/HeaderMesero";
 
+import shoppingCartIcon from "../../assets/shopping-cart.png";
+import trashIcon from "../../assets/trash.png";
+
 function formatearPrecio(valor) {
     return Number(valor || 0).toLocaleString("es-CO");
 }
@@ -79,7 +82,15 @@ export default function ResumenPedido({
                 <section className="resumen-card">
                     <div className="resumen-header">
                         <div>
-                            <h1 className="resumen-title">Resumen del Pedido</h1>
+                            <div className="resumen-title-row">
+                                <img
+                                    src={shoppingCartIcon}
+                                    alt=""
+                                    className="resumen-title-icon"
+                                />
+                                <h1 className="resumen-title">Resumen del Pedido</h1>
+                            </div>
+
                             <p className="resumen-subtitle">
                                 Mesa {mesaSeleccionada.numero_mesa}
                             </p>
@@ -128,7 +139,7 @@ export default function ResumenPedido({
                                         aria-label={`Eliminar ${item.nombre_producto}`}
                                         title="Eliminar producto"
                                     >
-                                        🗑
+                                        <img src={trashIcon} alt="" className="resumen-delete-icon" />
                                     </button>
                                 </article>
                             ))

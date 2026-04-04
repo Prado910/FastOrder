@@ -559,12 +559,22 @@ body {
     min-height: 46px;
     border-radius: 10px;
     font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
 }
 
 .menu-order-button:disabled {
     opacity: 0.65;
     cursor: not-allowed;
     transform: none;
+}
+
+.menu-order-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
 }
 
 .menu-tabs {
@@ -895,13 +905,14 @@ body {
     border: none;
     background: transparent;
     cursor: pointer;
-    font-size: 18px;
-    line-height: 1;
     padding: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .resumen-delete-btn:hover {
-    opacity: 0.75;
+    opacity: 0.8;
 }
 
 .resumen-delete-btn:disabled {
@@ -965,4 +976,23 @@ body {
     .resumen-actions {
         grid-template-columns: 1fr;
     }
+}
+
+.resumen-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.resumen-title-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    opacity: 0.85;
+}
+
+.resumen-delete-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
 }

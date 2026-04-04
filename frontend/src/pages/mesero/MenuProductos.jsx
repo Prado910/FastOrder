@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { getProductos } from "../../services/api";
 import HeaderMesero from "../../components/mesero/HeaderMesero";
 import ProductoCard from "../../components/mesero/ProductoCard";
+import shoppingCartWhiteIcon from "../../assets/shopping-cart-white.png";
 
 const CATEGORIAS = ["ENTRADAS", "HAMBURGUESAS", "BEBIDAS", "ALTERNOS"];
 
@@ -128,7 +129,8 @@ export default function MenuProductos({
                         onClick={onContinuarResumen}
                         disabled={itemsPedido.length === 0}
                     >
-                        Ver Pedido ({itemsPedido.length})
+                        <img src={shoppingCartWhiteIcon} alt="" className="menu-order-icon" />
+                        <span>Ver Pedido ({itemsPedido.length})</span>
                     </button>
                 </header>
 
