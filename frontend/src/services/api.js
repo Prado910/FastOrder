@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8000/api";
+const API_BASE_URL = "/api";
 
 // Procesa la respuesta HTTP y extrae un mensaje entendible si ocurre un error
 async function handleResponse(response) {

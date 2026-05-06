@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 from decimal import Decimal
 from fastapi import HTTPException
 
-from src.services.pedido_service import registrar_pedido, consultar_pedido
+from backend.src.services.pedido_service import registrar_pedido, consultar_pedido
 
 
 # =========================================================

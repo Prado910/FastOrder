@@ -1,16 +1,16 @@
 import pytest
 from unittest.mock import MagicMock
 
-from src.repositories.mesa_repository import (
+from backend.src.repositories.mesa_repository import (
     listar_mesas_disponibles,
     obtener_mesa_por_id
 )
 
-from src.repositories.usuario_repository import (
+from backend.src.repositories.usuario_repository import (
     obtener_mesero_activo_por_id
 )
 
-from src.repositories.pedido_repository import (
+from backend.src.repositories.pedido_repository import (
     crear_pedido,
     crear_detalle_pedido,
     actualizar_mesa_a_ocupada,
