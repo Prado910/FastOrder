@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import select
+from sqlalchemy import select, or_
 
 from src.models.pedido import Pedido
 from src.models.detalle_pedido import DetallePedido
@@ -31,3 +31,34 @@ def obtener_pedido_por_id(db: Session, id_pedido: int):
         .where(Pedido.id_pedido == id_pedido)
     )
     return db.execute(stmt).unique().scalar_one_or_none()
+
+def listar_pedidos_activos_por_mesero(db: Session, id_usuario_mesero: int, criterio: str | None = None):
+    stmt = (
+        select(Pedido)
+        .options(joinedload(Pedido.detalles).joinedload(DetallePedido.producto))
+        .where(
+            Pedido.id_usuario_mesero == id_usuario_mesero,
+            ~Pedido.estado.in_(["FACTURADO", "CANCELADO"])
+        )
+        .order_by(Pedido.fecha_hora_creacion.desc())
+    )
+
+    texto = (criterio or "").strip()
+
+    if texto:
+        texto_mesa = texto.lower().replace("mesa", "").strip()
+
+        condiciones = [
+            Pedido.numero_pedido.ilike(f"%{texto}%")
+        ]
+
+        if texto.isdigit() or texto_mesa.isdigit():
+            numero = int(texto_mesa if texto_mesa.isdigit() else texto)
+            condiciones.extend([
+                Pedido.id_pedido == numero,
+                Pedido.id_mesa == numero,
+            ])
+
+        stmt = stmt.where(or_(*condiciones))
+
+    return db.execute(stmt).unique().scalars().all()

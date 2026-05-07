@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional
 import re
@@ -54,4 +55,5 @@ class PedidoResponse(BaseModel):
     id_mesa: int
     estado: str
     total: Decimal = Field(example="45000.00")
+    fecha_hora_creacion: Optional[datetime] = None
     items: List[PedidoItemResponse]

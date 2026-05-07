@@ -275,7 +275,7 @@ export default function MenuProductos({
                             </button>
                             <button
                                 type="button"
-                                className="btn btn-primary"
+                                className="btn btn-primary modal-add-btn"
                                 onClick={agregarAlPedido}
                                 disabled={
                                     (!Number.isInteger(Number(cantidad)) || Number(cantidad) <= 0) ||

@@ -14,6 +14,7 @@ from src.repositories.pedido_repository import (
     crear_detalle_pedido,
     actualizar_mesa_a_ocupada,
     obtener_pedido_por_id,
+    listar_pedidos_activos_por_mesero,
 )
 from src.utils.pedido_utils import generar_numero_pedido, calcular_subtotal, calcular_total
 from src.schemas.pedido import PedidoCreate
@@ -108,24 +109,33 @@ def registrar_pedido(db: Session, payload: PedidoCreate):
     db.refresh(pedido)
 
     return {
-        "id_pedido": pedido.id_pedido,
-        "numero_pedido": pedido.numero_pedido,
-        "id_mesa": pedido.id_mesa,
-        "estado": pedido.estado,
-        "total": pedido.total,
-        "items": items_response,
-    }
+    "id_pedido": pedido.id_pedido,
+    "numero_pedido": pedido.numero_pedido,
+    "id_mesa": pedido.id_mesa,
+    "estado": pedido.estado,
+    "total": pedido.total,
+    "fecha_hora_creacion": pedido.fecha_hora_creacion,
+    "items": items_response,
+}
 
 
 def consultar_pedido(db: Session, id_pedido: int):
-    # Se consulta el pedido junto con sus detalles
     pedido = obtener_pedido_por_id(db, id_pedido)
+
     if not pedido:
         raise HTTPException(status_code=404, detail="Pedido no encontrado.")
 
+    return construir_respuesta_pedido(pedido)
+
+
+def listar_pedidos_activos(db: Session, id_usuario_mesero: int, criterio: str | None = None):
+    pedidos = listar_pedidos_activos_por_mesero(db, id_usuario_mesero, criterio)
+    return [construir_respuesta_pedido(pedido) for pedido in pedidos]
+
+def construir_respuesta_pedido(pedido: Pedido):
     items = []
+
     for detalle in pedido.detalles:
-        # Se transforma cada detalle al formato de respuesta esperado por la API
         items.append({
             "id_producto": detalle.id_producto,
             "nombre_producto": detalle.producto.nombre,
@@ -141,5 +151,6 @@ def consultar_pedido(db: Session, id_pedido: int):
         "id_mesa": pedido.id_mesa,
         "estado": pedido.estado,
         "total": pedido.total,
+        "fecha_hora_creacion": pedido.fecha_hora_creacion,
         "items": items,
     }

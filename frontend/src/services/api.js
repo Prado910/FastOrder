@@ -46,3 +46,16 @@ export async function crearPedido(payload) {
 
     return handleResponse(response);
 }
+
+export async function getPedidosActivos({ idUsuarioMesero = 1 } = {}) {
+    const response = await fetch(
+        `${API_BASE_URL}/pedidos?id_usuario_mesero=${idUsuarioMesero}`
+    );
+
+    return handleResponse(response);
+}
+
+export async function consultarPedido(idPedido) {
+    const response = await fetch(`${API_BASE_URL}/pedidos/${idPedido}`);
+    return handleResponse(response);
+}

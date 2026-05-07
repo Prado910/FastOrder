@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from src.db import get_db
 from src.schemas.pedido import PedidoCreate, PedidoResponse
-from src.services.pedido_service import registrar_pedido, consultar_pedido
+from src.services.pedido_service import registrar_pedido, consultar_pedido, listar_pedidos_activos
 
 router = APIRouter(prefix="/pedidos")
 
@@ -14,6 +14,13 @@ def post_pedido(payload: PedidoCreate, db: Session = Depends(get_db)):
     # y retorna la información del pedido ya registrado
     return registrar_pedido(db, payload)
 
+@router.get("", response_model=list[PedidoResponse])
+def get_pedidos(
+    id_usuario_mesero: int,
+    criterio: str | None = None,
+    db: Session = Depends(get_db)
+):
+    return listar_pedidos_activos(db, id_usuario_mesero, criterio)
 
 @router.get("/{id_pedido}", response_model=PedidoResponse)
 def get_pedido(id_pedido: int, db: Session = Depends(get_db)):
