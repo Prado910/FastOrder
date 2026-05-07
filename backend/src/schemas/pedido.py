@@ -1,13 +1,15 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import List, Optional
+from typing import List, Optional, Literal
 import re
 
 from pydantic import BaseModel, Field, field_validator
 
-OBSERVACION_REGEX = re.compile(r"^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s.,;:()\-]*$")
+OBSERVACION_REGEX = re.compile(
+    r"^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s.,;:()\-]*$"
+)
 
-# Schemas de entrada y salida para la gestión de pedidos en la API
+
 class PedidoItemCreate(BaseModel):
     id_producto: int
     cantidad: int = Field(gt=0)
@@ -27,9 +29,7 @@ class PedidoItemCreate(BaseModel):
             raise ValueError("La nota no puede superar los 250 caracteres.")
 
         if not OBSERVACION_REGEX.fullmatch(value):
-            raise ValueError(
-                "La nota contiene caracteres no permitidos."
-            )
+            raise ValueError("La nota contiene caracteres no permitidos.")
 
         return value
 
@@ -38,6 +38,10 @@ class PedidoCreate(BaseModel):
     id_mesa: int
     id_usuario_mesero: int
     items: List[PedidoItemCreate]
+
+
+class PedidoEstadoUpdate(BaseModel):
+    estado: Literal["EN_PREPARACION", "LISTO"]
 
 
 class PedidoItemResponse(BaseModel):
@@ -53,6 +57,8 @@ class PedidoResponse(BaseModel):
     id_pedido: int
     numero_pedido: str
     id_mesa: int
+    numero_mesa: Optional[int] = None
+    mesero: Optional[str] = None
     estado: str
     total: Decimal = Field(example="45000.00")
     fecha_hora_creacion: Optional[datetime] = None

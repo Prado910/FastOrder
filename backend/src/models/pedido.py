@@ -15,8 +15,11 @@ class Pedido(Base):
     estado = Column("ESTADO", String(20), nullable=False)
     total = Column("TOTAL", Numeric(10, 2), nullable=False)
 
-    # Un pedido puede tener varios detalles asociados
-    detalles = relationship("DetallePedido", back_populates="pedido", cascade="all, delete-orphan")
+    detalles = relationship(
+        "DetallePedido",
+        back_populates="pedido",
+        cascade="all, delete-orphan"
+    )
 
-    # Un pedido está asociado a un mesero (usuario)
     mesero = relationship("Usuario")
+    mesa = relationship("Mesa")

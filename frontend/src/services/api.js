@@ -86,3 +86,24 @@ export async function login(payload) {
 
     return handleResponse(response);
 }
+
+export async function getPedidosCocina() {
+    const response = await fetch(`${API_BASE_URL}/pedidos/cocina`);
+    return handleResponse(response);
+}
+
+export async function actualizarEstadoPedido(idPedido, estado) {
+    if (!idPedido) {
+        throw new Error("Debe seleccionar un pedido para consultar el detalle");
+    }
+
+    const response = await fetch(`${API_BASE_URL}/pedidos/${idPedido}/estado`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ estado }),
+    });
+
+    return handleResponse(response);
+}

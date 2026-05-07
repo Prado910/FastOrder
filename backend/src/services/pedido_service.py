@@ -16,7 +16,9 @@ from src.repositories.pedido_repository import (
     actualizar_mesa_a_libre,
     obtener_pedido_por_id,
     listar_pedidos,
+    listar_pedidos_cocina,
     marcar_pedido_cancelado,
+    actualizar_estado_pedido,
 )
 from src.utils.pedido_utils import generar_numero_pedido, calcular_subtotal, calcular_total
 from src.schemas.pedido import PedidoCreate
@@ -184,12 +186,66 @@ def construir_respuesta_pedido(pedido: Pedido):
             "observacion_item": detalle.observacion_item,
         })
 
+    mesero = None
+    if pedido.mesero:
+        mesero = f"{pedido.mesero.nombre} {pedido.mesero.apellido}"
+
+    numero_mesa = None
+    if pedido.mesa:
+        numero_mesa = pedido.mesa.numero_mesa
+
     return {
         "id_pedido": pedido.id_pedido,
         "numero_pedido": pedido.numero_pedido,
         "id_mesa": pedido.id_mesa,
+        "numero_mesa": numero_mesa,
+        "mesero": mesero,
         "estado": pedido.estado,
         "total": pedido.total,
         "fecha_hora_creacion": pedido.fecha_hora_creacion,
         "items": items,
     }
+
+def listar_pedidos_para_cocina(db: Session):
+    pedidos = listar_pedidos_cocina(db)
+    return [construir_respuesta_pedido(pedido) for pedido in pedidos]
+
+
+def actualizar_estado_pedido_cocina(db: Session, id_pedido: int, nuevo_estado: str):
+    pedido = obtener_pedido_por_id(db, id_pedido)
+
+    if not pedido:
+        raise HTTPException(status_code=404, detail="Pedido no encontrado.")
+
+    if pedido.estado == "CANCELADO":
+        raise HTTPException(
+            status_code=400,
+            detail="No se puede modificar un pedido cancelado"
+        )
+
+    if pedido.estado == "PENDIENTE" and nuevo_estado == "LISTO":
+        raise HTTPException(
+            status_code=400,
+            detail="Debe iniciar la preparación antes de finalizar"
+        )
+
+    transiciones_permitidas = {
+        "PENDIENTE": ["EN_PREPARACION"],
+        "EN_PREPARACION": ["LISTO"],
+    }
+
+    estados_posibles = transiciones_permitidas.get(pedido.estado, [])
+
+    if nuevo_estado not in estados_posibles:
+        raise HTTPException(
+            status_code=400,
+            detail="Cambio de estado no permitido."
+        )
+
+    actualizar_estado_pedido(db, pedido, nuevo_estado)
+    db.commit()
+    db.refresh(pedido)
+
+    pedido_actualizado = obtener_pedido_por_id(db, id_pedido)
+
+    return construir_respuesta_pedido(pedido_actualizado)
