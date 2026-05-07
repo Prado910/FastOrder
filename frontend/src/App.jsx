@@ -56,6 +56,11 @@ export default function App() {
     setPaso("confirmado");
   }
 
+  function manejarPedidoEliminado() {
+    setPedidoEnSeguimiento(null);
+    setPaso("dashboard");
+  }
+
   function cerrarSesion() {
     setMesaSeleccionada(null);
     setItemsPedido([]);
@@ -115,6 +120,7 @@ export default function App() {
       <SeguimientoPedido
         pedido={pedidoEnSeguimiento}
         onVolver={volverADashboard}
+        onPedidoEliminado={manejarPedidoEliminado}
       />
     );
   }

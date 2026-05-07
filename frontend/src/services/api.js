@@ -62,3 +62,15 @@ export async function consultarPedido(idPedido) {
     const response = await fetch(`${API_BASE_URL}/pedidos/${idPedido}`);
     return handleResponse(response);
 }
+
+export async function eliminarPedido(idPedido) {
+    if (!idPedido) {
+        throw new Error("Debe seleccionar un pedido válido para eliminar");
+    }
+
+    const response = await fetch(`${API_BASE_URL}/pedidos/${idPedido}`, {
+        method: "DELETE",
+    });
+
+    return handleResponse(response);
+}

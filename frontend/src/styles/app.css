@@ -1219,3 +1219,74 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* HU3 - Eliminación de pedidos */
+.btn-danger {
+    background: #e9252a;
+    color: #ffffff;
+    border-color: #e9252a;
+    font-weight: 700;
+}
+
+.btn-danger:hover {
+    background: #d51f24;
+    border-color: #d51f24;
+}
+
+.btn-danger:disabled,
+.btn-danger:disabled:hover {
+    background: #9ca3af;
+    border-color: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.seguimiento-delete-btn {
+    margin-bottom: 28px;
+    min-height: 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.seguimiento-delete-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+}
+
+.seguimiento-error {
+    margin: 0 0 18px;
+}
+
+.modal-title {
+    margin: 0 0 14px;
+    font-size: 24px;
+    color: #1f2937;
+}
+
+.modal-description {
+    margin-bottom: 22px;
+    color: #4b5563;
+    line-height: 1.5;
+}
+
+.delete-order-details {
+    background: #e7ded7;
+    border-radius: 10px;
+    padding: 18px 20px;
+    display: grid;
+    gap: 8px;
+}
+
+.progress-step-completed {
+    background: #d9f8e3;
+    color: #087443;
+}
+
+.progress-step-completed .progress-step-number {
+    background: #09c761;
+    color: #ffffff;
+}

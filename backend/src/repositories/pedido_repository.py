@@ -22,6 +22,15 @@ def actualizar_mesa_a_ocupada(db: Session, mesa: Mesa):
     mesa.estado = "OCUPADA"
     db.flush()
 
+def actualizar_mesa_a_libre(db: Session, mesa: Mesa):
+    mesa.estado = "LIBRE"
+    db.flush()
+
+def marcar_pedido_cancelado(db: Session, pedido: Pedido):
+    pedido.estado = "CANCELADO"
+    db.flush()
+    return pedido
+
 
 def obtener_pedido_por_id(db: Session, id_pedido: int):
     stmt = (

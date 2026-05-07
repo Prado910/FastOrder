@@ -13,8 +13,10 @@ from src.repositories.pedido_repository import (
     crear_pedido,
     crear_detalle_pedido,
     actualizar_mesa_a_ocupada,
+    actualizar_mesa_a_libre,
     obtener_pedido_por_id,
     listar_pedidos,
+    marcar_pedido_cancelado,
 )
 from src.utils.pedido_utils import generar_numero_pedido, calcular_subtotal, calcular_total
 from src.schemas.pedido import PedidoCreate
@@ -131,6 +133,43 @@ def consultar_pedido(db: Session, id_pedido: int):
 def listar_todos_los_pedidos(db: Session, criterio: str | None = None):
     pedidos = listar_pedidos(db, criterio)
     return [construir_respuesta_pedido(pedido) for pedido in pedidos]
+
+
+def eliminar_pedido(db: Session, id_pedido: int):
+    if not id_pedido:
+        raise HTTPException(
+            status_code=400,
+            detail="Debe seleccionar un pedido válido para eliminar"
+        )
+
+    pedido = obtener_pedido_por_id(db, id_pedido)
+
+    if not pedido:
+        raise HTTPException(
+            status_code=404,
+            detail="Debe seleccionar un pedido válido para eliminar"
+        )
+
+    if pedido.estado != "PENDIENTE":
+        mensaje = "Solo se pueden eliminar pedidos pendientes."
+
+        if pedido.estado == "EN_PREPARACION":
+            mensaje = "No se puede eliminar un pedido en preparación"
+
+        raise HTTPException(status_code=400, detail=mensaje)
+
+    mesa = obtener_mesa_por_id(db, pedido.id_mesa)
+
+    marcar_pedido_cancelado(db, pedido)
+
+    if mesa:
+        actualizar_mesa_a_libre(db, mesa)
+
+    db.commit()
+    db.refresh(pedido)
+
+    return construir_respuesta_pedido(pedido)
+
 
 def construir_respuesta_pedido(pedido: Pedido):
     items = []
