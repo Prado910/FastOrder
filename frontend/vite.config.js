@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
+    allowedHosts: ['fastorder-1-dook.onrender.com', 'localhost'],
     host: '0.0.0.0',
     proxy: {
       '/api': {
