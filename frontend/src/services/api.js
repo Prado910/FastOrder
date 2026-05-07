@@ -47,11 +47,14 @@ export async function crearPedido(payload) {
     return handleResponse(response);
 }
 
-export async function getPedidosActivos({ idUsuarioMesero = 1 } = {}) {
-    const response = await fetch(
-        `${API_BASE_URL}/pedidos?id_usuario_mesero=${idUsuarioMesero}`
-    );
+export async function getPedidos({ criterio = "" } = {}) {
+    const params = new URLSearchParams();
 
+    if (criterio.trim()) {
+        params.append("criterio", criterio.trim());
+    }
+
+    const response = await fetch(`${API_BASE_URL}/pedidos?${params.toString()}`);
     return handleResponse(response);
 }
 

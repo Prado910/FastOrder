@@ -32,14 +32,10 @@ def obtener_pedido_por_id(db: Session, id_pedido: int):
     )
     return db.execute(stmt).unique().scalar_one_or_none()
 
-def listar_pedidos_activos_por_mesero(db: Session, id_usuario_mesero: int, criterio: str | None = None):
+def listar_pedidos(db: Session, criterio: str | None = None):
     stmt = (
         select(Pedido)
         .options(joinedload(Pedido.detalles).joinedload(DetallePedido.producto))
-        .where(
-            Pedido.id_usuario_mesero == id_usuario_mesero,
-            ~Pedido.estado.in_(["FACTURADO", "CANCELADO"])
-        )
         .order_by(Pedido.fecha_hora_creacion.desc())
     )
 

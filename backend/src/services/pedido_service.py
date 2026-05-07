@@ -14,7 +14,7 @@ from src.repositories.pedido_repository import (
     crear_detalle_pedido,
     actualizar_mesa_a_ocupada,
     obtener_pedido_por_id,
-    listar_pedidos_activos_por_mesero,
+    listar_pedidos,
 )
 from src.utils.pedido_utils import generar_numero_pedido, calcular_subtotal, calcular_total
 from src.schemas.pedido import PedidoCreate
@@ -128,8 +128,8 @@ def consultar_pedido(db: Session, id_pedido: int):
     return construir_respuesta_pedido(pedido)
 
 
-def listar_pedidos_activos(db: Session, id_usuario_mesero: int, criterio: str | None = None):
-    pedidos = listar_pedidos_activos_por_mesero(db, id_usuario_mesero, criterio)
+def listar_todos_los_pedidos(db: Session, criterio: str | None = None):
+    pedidos = listar_pedidos(db, criterio)
     return [construir_respuesta_pedido(pedido) for pedido in pedidos]
 
 def construir_respuesta_pedido(pedido: Pedido):
