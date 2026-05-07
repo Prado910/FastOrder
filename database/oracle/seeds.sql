@@ -1,0 +1,51 @@
+-- =========================
+-- ROLES
+-- =========================
+INSERT INTO ROL (NOMBRE) VALUES ('MESERO');
+INSERT INTO ROL (NOMBRE) VALUES ('COCINA');
+INSERT INTO ROL (NOMBRE) VALUES ('CAJA');
+INSERT INTO ROL (NOMBRE) VALUES ('ADMINISTRADOR');
+
+-- =========================
+-- CATEGORIAS PRODUCTOS
+-- =========================
+INSERT INTO CATEGORIA_PRODUCTO (NOMBRE) VALUES ('ENTRADAS');
+INSERT INTO CATEGORIA_PRODUCTO (NOMBRE) VALUES ('HAMBURGUESAS');
+INSERT INTO CATEGORIA_PRODUCTO (NOMBRE) VALUES ('BEBIDAS');
+INSERT INTO CATEGORIA_PRODUCTO (NOMBRE) VALUES ('ALTERNOS');
+
+-- =========================
+-- MESAS
+-- =========================
+INSERT INTO MESA (NUMERO_MESA, CAPACIDAD) VALUES (1, 4);
+INSERT INTO MESA (NUMERO_MESA, CAPACIDAD) VALUES (2, 2);
+INSERT INTO MESA (NUMERO_MESA, CAPACIDAD) VALUES (3, 6);
+INSERT INTO MESA (NUMERO_MESA, CAPACIDAD) VALUES (4, 4);
+
+-- =========================
+-- USUARIOS
+-- =========================
+INSERT INTO USUARIO (ID_ROL, NOMBRE, APELLIDO, USERNAME, CORREO, CLAVE)
+VALUES (1, 'Carlos', 'Mendez', 'mesero1', 'mesero1@lunaroja.com', 'password');
+INSERT INTO USUARIO (ID_ROL, NOMBRE, APELLIDO, USERNAME, CORREO, CLAVE)
+VALUES (2, 'Ana', 'Torres', 'cocina1', 'cocina1@lunaroja.com', 'password');
+
+-- =========================
+-- PRODUCTOS
+-- =========================
+INSERT INTO PRODUCTO (ID_CATEGORIA, NOMBRE, DESCRIPCION, PRECIO, DISPONIBLE)
+VALUES (1, 'Bruschetta', 'Entrada italiana con tomate y albahaca', 9.00, 'S');
+
+INSERT INTO PRODUCTO (ID_CATEGORIA, NOMBRE, DESCRIPCION, PRECIO, DISPONIBLE)
+VALUES (1, 'Ensalada César', 'Lechuga, crutones y aderezo César', 12.50, 'S');
+
+INSERT INTO PRODUCTO (ID_CATEGORIA, NOMBRE, DESCRIPCION, PRECIO, DISPONIBLE)
+VALUES (3, 'Agua Mineral', 'Bebida sin gas 600 ml', 3.00, 'N');
+
+INSERT INTO PRODUCTO (ID_CATEGORIA, NOMBRE, DESCRIPCION, PRECIO, DISPONIBLE)
+VALUES (3, 'Limonada', 'Limonada natural', 4.50, 'S');
+
+INSERT INTO PRODUCTO (ID_CATEGORIA, NOMBRE, DESCRIPCION, PRECIO, DISPONIBLE)
+VALUES (3, 'Café Espresso', 'Café espresso sencillo', 3.50, 'S');
+
+COMMIT;
