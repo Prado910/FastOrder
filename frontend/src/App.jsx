@@ -1,17 +1,50 @@
 import { useState } from "react";
+
+import Login from "./pages/Login";
 import DashboardMesero from "./pages/mesero/DashboardMesero";
 import SeleccionarMesa from "./pages/mesero/SeleccionarMesa";
 import MenuProductos from "./pages/mesero/MenuProductos";
 import ResumenPedido from "./pages/mesero/ResumenPedido";
 import PedidoConfirmado from "./pages/mesero/PedidoConfirmado";
 import SeguimientoPedido from "./pages/mesero/SeguimientoPedido";
+import DashboardCocina from "./pages/cocina/DashboardCocina";
+
+function obtenerUsuarioGuardado() {
+  try {
+    const usuarioGuardado = sessionStorage.getItem("usuario");
+
+    if (!usuarioGuardado) {
+      return null;
+    }
+
+    return JSON.parse(usuarioGuardado);
+  } catch {
+    sessionStorage.removeItem("usuario");
+    return null;
+  }
+}
 
 export default function App() {
+  const [usuario, setUsuario] = useState(obtenerUsuarioGuardado);
   const [paso, setPaso] = useState("dashboard");
   const [mesaSeleccionada, setMesaSeleccionada] = useState(null);
   const [itemsPedido, setItemsPedido] = useState([]);
   const [pedidoConfirmado, setPedidoConfirmado] = useState(null);
   const [pedidoEnSeguimiento, setPedidoEnSeguimiento] = useState(null);
+
+  function limpiarFlujoPedido() {
+    setMesaSeleccionada(null);
+    setItemsPedido([]);
+    setPedidoConfirmado(null);
+    setPedidoEnSeguimiento(null);
+  }
+
+  function manejarLogin(usuarioAutenticado) {
+    setUsuario(usuarioAutenticado);
+    sessionStorage.setItem("usuario", JSON.stringify(usuarioAutenticado));
+    limpiarFlujoPedido();
+    setPaso("dashboard");
+  }
 
   function irANuevoPedido() {
     setMesaSeleccionada(null);
@@ -31,10 +64,7 @@ export default function App() {
   }
 
   function volverADashboard() {
-    setMesaSeleccionada(null);
-    setItemsPedido([]);
-    setPedidoConfirmado(null);
-    setPedidoEnSeguimiento(null);
+    limpiarFlujoPedido();
     setPaso("dashboard");
   }
 
@@ -62,16 +92,29 @@ export default function App() {
   }
 
   function cerrarSesion() {
-    setMesaSeleccionada(null);
-    setItemsPedido([]);
-    setPedidoConfirmado(null);
-    setPedidoEnSeguimiento(null);
+    sessionStorage.removeItem("usuario");
+    setUsuario(null);
+    limpiarFlujoPedido();
     setPaso("dashboard");
+  }
+
+  if (!usuario) {
+    return <Login onLogin={manejarLogin} />;
+  }
+
+  if (usuario.rol === "COCINA") {
+    return (
+      <DashboardCocina
+        usuario={usuario}
+        onCerrarSesion={cerrarSesion}
+      />
+    );
   }
 
   if (paso === "dashboard") {
     return (
       <DashboardMesero
+        usuario={usuario}
         onNuevoPedido={irANuevoPedido}
         onCerrarSesion={cerrarSesion}
         onVerPedido={irASeguimientoPedido}
@@ -82,8 +125,10 @@ export default function App() {
   if (paso === "mesas") {
     return (
       <SeleccionarMesa
+        usuario={usuario}
         onMesaSeleccionada={manejarMesaSeleccionada}
         onVolver={volverADashboard}
+        onCerrarSesion={cerrarSesion}
       />
     );
   }
@@ -91,6 +136,7 @@ export default function App() {
   if (paso === "productos") {
     return (
       <MenuProductos
+        usuario={usuario}
         mesaSeleccionada={mesaSeleccionada}
         itemsPedido={itemsPedido}
         setItemsPedido={setItemsPedido}
@@ -104,6 +150,7 @@ export default function App() {
   if (paso === "resumen") {
     return (
       <ResumenPedido
+        usuario={usuario}
         mesaSeleccionada={mesaSeleccionada}
         itemsPedido={itemsPedido}
         setItemsPedido={setItemsPedido}
@@ -118,17 +165,21 @@ export default function App() {
   if (paso === "seguimiento") {
     return (
       <SeguimientoPedido
+        usuario={usuario}
         pedido={pedidoEnSeguimiento}
         onVolver={volverADashboard}
         onPedidoEliminado={manejarPedidoEliminado}
+        onCerrarSesion={cerrarSesion}
       />
     );
   }
 
   return (
     <PedidoConfirmado
+      usuario={usuario}
       pedido={pedidoConfirmado}
       onNuevoPedido={volverADashboard}
+      onCerrarSesion={cerrarSesion}
     />
   );
 }

@@ -61,6 +61,7 @@ function esPedidoActivo(pedido) {
 }
 
 export default function DashboardMesero({
+    usuario,
     onNuevoPedido,
     onCerrarSesion,
     onVerPedido,
@@ -125,7 +126,7 @@ export default function DashboardMesero({
 
     return (
         <div className="dashboard-shell">
-            <HeaderMesero onCerrarSesion={onCerrarSesion} />
+            <HeaderMesero usuario={usuario} onCerrarSesion={onCerrarSesion} />
 
             <main className="page-container dashboard-page">
                 <section className="dashboard-hero">

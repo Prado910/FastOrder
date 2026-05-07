@@ -19,6 +19,7 @@ function obtenerCategoriaProducto(producto) {
 }
 
 export default function MenuProductos({
+    usuario,
     mesaSeleccionada,
     itemsPedido,
     setItemsPedido,
@@ -128,7 +129,7 @@ export default function MenuProductos({
 
     return (
         <div className="dashboard-shell">
-            <HeaderMesero onCerrarSesion={onCerrarSesion} />
+            <HeaderMesero usuario={usuario} onCerrarSesion={onCerrarSesion} />
 
             <main className="page-container">
                 <header className="menu-header">

@@ -27,6 +27,8 @@ INSERT INTO MESA (NUMERO_MESA, CAPACIDAD) VALUES (4, 4);
 -- =========================
 INSERT INTO USUARIO (ID_ROL, NOMBRE, APELLIDO, USERNAME, CORREO, CLAVE)
 VALUES (1, 'Carlos', 'Mendez', 'mesero1', 'mesero1@lunaroja.com', 'password');
+INSERT INTO USUARIO (ID_ROL, NOMBRE, APELLIDO, USERNAME, CORREO, CLAVE)
+VALUES (2, 'Ana', 'Torres', 'cocina1', 'cocina1@lunaroja.com', 'password');
 
 -- =========================
 -- PRODUCTOS

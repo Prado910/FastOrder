@@ -5,7 +5,12 @@ import MesaCard from "../../components/mesero/MesaCard";
 import { getMesas } from "../../services/api";
 import backIcon from "../../assets/back.png";
 
-export default function SeleccionarMesa({ onMesaSeleccionada, onVolver, onCerrarSesion }) {
+export default function SeleccionarMesa({
+    usuario,
+    onMesaSeleccionada,
+    onVolver,
+    onCerrarSesion,
+}) {
     const [mesas, setMesas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -30,7 +35,7 @@ export default function SeleccionarMesa({ onMesaSeleccionada, onVolver, onCerrar
 
     return (
         <div className="dashboard-shell">
-            <HeaderMesero onCerrarSesion={onCerrarSesion} />
+            <HeaderMesero usuario={usuario} onCerrarSesion={onCerrarSesion} />
 
             <main className="page-container dashboard-page">
                 <header className="mesas-page-header">

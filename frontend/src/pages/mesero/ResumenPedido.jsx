@@ -10,6 +10,7 @@ function formatearPrecio(valor) {
 }
 
 export default function ResumenPedido({
+    usuario,
     mesaSeleccionada,
     itemsPedido,
     setItemsPedido,
@@ -36,6 +37,11 @@ export default function ResumenPedido({
             return;
         }
 
+        if (!usuario?.id_usuario) {
+            setError("No hay un mesero autenticado.");
+            return;
+        }
+
         try {
             setLoading(true);
             setError("");
@@ -43,7 +49,8 @@ export default function ResumenPedido({
             // Se adapta la estructura del pedido del frontend al formato esperado por la API
             const payload = {
                 id_mesa: mesaSeleccionada.id_mesa,
-                id_usuario_mesero: 1, // Temporal para Sprint 1; luego debe salir de la sesión del usuario autenticado
+                id_usuario_mesero: usuario.id_usuario, // Utiliza el ID del mesero autenticado
+
                 items: itemsPedido.map((item) => ({
                     id_producto: item.id_producto,
                     cantidad: item.cantidad,
@@ -67,7 +74,7 @@ export default function ResumenPedido({
 
     return (
         <div className="dashboard-shell">
-            <HeaderMesero onCerrarSesion={onCerrarSesion} />
+            <HeaderMesero usuario={usuario} onCerrarSesion={onCerrarSesion} />
 
             <main className="page-container">
                 <button

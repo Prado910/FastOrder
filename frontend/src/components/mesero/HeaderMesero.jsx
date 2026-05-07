@@ -1,7 +1,26 @@
 import logoIcon from "../../assets/moon.png";
 import logoutIcon from "../../assets/logout.png";
 
-export default function HeaderMesero({ nombre = "Carlos Méndez", rol = "mesero", onCerrarSesion }) {
+function formatearRol(rol) {
+    if (!rol) return "";
+
+    return rol
+        .toLowerCase()
+        .replace(/^\w/, (letra) => letra.toUpperCase());
+}
+
+export default function HeaderMesero({
+    usuario,
+    nombre = "Usuario",
+    rol = "mesero",
+    onCerrarSesion,
+}) {
+    const nombreUsuario = usuario
+        ? `${usuario.nombre} ${usuario.apellido}`
+        : nombre;
+
+    const rolUsuario = usuario?.rol || rol;
+
     return (
         <header className="app-header">
             <div className="header-brand-group">
@@ -10,7 +29,7 @@ export default function HeaderMesero({ nombre = "Carlos Méndez", rol = "mesero"
                 <div>
                     <p className="brand">Luna Roja</p>
                     <p className="user-text">
-                        {nombre} - {rol}
+                        {nombreUsuario} - {formatearRol(rolUsuario)}
                     </p>
                 </div>
             </div>

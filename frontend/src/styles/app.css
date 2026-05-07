@@ -1290,3 +1290,240 @@ body {
     background: #09c761;
     color: #ffffff;
 }
+
+/* Login */
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    background: linear-gradient(135deg, #982535 0%, #cb5543 100%);
+}
+
+.login-card {
+    width: 100%;
+    max-width: 560px;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 36px 32px 30px;
+    box-shadow: 0 24px 70px rgba(66, 20, 20, 0.3);
+}
+
+.login-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.login-logo {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+}
+
+.login-brand h1 {
+    margin: 0;
+    color: #9b2438;
+    font-size: 36px;
+    line-height: 1;
+    font-weight: 800;
+}
+
+.login-system-name {
+    margin: 0;
+    text-align: center;
+    color: #111827;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.login-instructions {
+    margin: 28px 0 26px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 20px;
+}
+
+.login-form {
+    display: grid;
+    gap: 22px;
+}
+
+.login-field {
+    display: grid;
+    gap: 10px;
+    color: #111827;
+    font-weight: 700;
+}
+
+.login-field input {
+    width: 100%;
+    border: 1px solid transparent;
+    background: #ffffff;
+    color: #111827;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 16px;
+    outline: none;
+}
+
+.login-field input::placeholder {
+    color: #6b7280;
+}
+
+.login-field input:focus {
+    border-color: #a2263b;
+    box-shadow: 0 0 0 3px rgba(162, 38, 59, 0.15);
+}
+
+.login-submit {
+    min-height: 46px;
+    margin-top: 6px;
+    font-weight: 700;
+}
+
+.login-error {
+    margin: 0;
+}
+
+.login-test-users {
+    margin-top: 30px;
+    background: #e7ded7;
+    border-radius: 10px;
+    padding: 22px 20px;
+    display: grid;
+    gap: 10px;
+    color: #4b5563;
+}
+
+.login-test-users strong {
+    color: #111827;
+}
+
+.login-test-users button {
+    width: fit-content;
+    border: none;
+    background: transparent;
+    padding: 0;
+    color: #4b5563;
+    font: inherit;
+    cursor: pointer;
+    text-align: left;
+}
+
+.login-test-users button:hover {
+    color: #9b2438;
+    text-decoration: underline;
+}
+
+.login-test-users p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Cocina */
+.cocina-card {
+    display: grid;
+    gap: 22px;
+}
+
+.cocina-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.cocina-counter {
+    min-width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #9b2438;
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 18px;
+}
+
+.cocina-empty-state {
+    margin-top: 8px;
+}
+
+.cocina-orders-list {
+    display: grid;
+    gap: 18px;
+}
+
+.cocina-order-card {
+    border: 1px solid #eadfdd;
+    border-radius: 14px;
+    padding: 20px;
+    background: #ffffff;
+    display: grid;
+    gap: 16px;
+}
+
+.cocina-order-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.cocina-order-header h3 {
+    margin: 0;
+    color: #111827;
+    font-size: 20px;
+}
+
+.cocina-order-header p {
+    margin: 6px 0 0;
+    color: #6b7280;
+}
+
+.cocina-order-products {
+    display: grid;
+    gap: 12px;
+}
+
+.cocina-product-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 12px 0;
+    border-top: 1px solid #f0e6e4;
+}
+
+.cocina-product-row:first-child {
+    border-top: none;
+}
+
+.cocina-product-row span {
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+    .login-card {
+        padding: 28px 22px;
+    }
+
+    .login-brand h1 {
+        font-size: 30px;
+    }
+
+    .login-system-name,
+    .login-instructions {
+        font-size: 17px;
+    }
+
+    .cocina-order-header,
+    .cocina-product-row {
+        flex-direction: column;
+    }
+}
