@@ -31,12 +31,14 @@ export default function App() {
   const [itemsPedido, setItemsPedido] = useState([]);
   const [pedidoConfirmado, setPedidoConfirmado] = useState(null);
   const [pedidoEnSeguimiento, setPedidoEnSeguimiento] = useState(null);
+  const [mostrarToastMesa, setMostrarToastMesa] = useState(false);
 
   function limpiarFlujoPedido() {
     setMesaSeleccionada(null);
     setItemsPedido([]);
     setPedidoConfirmado(null);
     setPedidoEnSeguimiento(null);
+    setMostrarToastMesa(false);
   }
 
   function manejarLogin(usuarioAutenticado) {
@@ -60,6 +62,7 @@ export default function App() {
 
   function manejarMesaSeleccionada(mesa) {
     setMesaSeleccionada(mesa);
+    setMostrarToastMesa(true);
     setPaso("productos");
   }
 
@@ -143,6 +146,8 @@ export default function App() {
         onVolver={volverADashboard}
         onContinuarResumen={irAResumen}
         onCerrarSesion={cerrarSesion}
+        mostrarToastMesa={mostrarToastMesa}
+        onOcultarToastMesa={() => setMostrarToastMesa(false)}
       />
     );
   }

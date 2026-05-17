@@ -26,6 +26,8 @@ export default function MenuProductos({
     onVolver,
     onContinuarResumen,
     onCerrarSesion,
+    mostrarToastMesa,
+    onOcultarToastMesa,
 }) {
     const [productos, setProductos] = useState([]);
     const [busqueda, setBusqueda] = useState("");
@@ -54,6 +56,16 @@ export default function MenuProductos({
 
         cargarProductos();
     }, []);
+
+    useEffect(() => {
+        if (!mostrarToastMesa) return;
+
+        const timer = setTimeout(() => {
+            onOcultarToastMesa?.();
+        }, 2500);
+
+        return () => clearTimeout(timer);
+    }, [mostrarToastMesa, onOcultarToastMesa]);
 
     const productosFiltrados = useMemo(() => {
         const texto = busqueda.trim().toLowerCase();
@@ -130,6 +142,13 @@ export default function MenuProductos({
     return (
         <div className="dashboard-shell">
             <HeaderMesero usuario={usuario} onCerrarSesion={onCerrarSesion} />
+
+            {mostrarToastMesa && mesaSeleccionada && (
+                <div className="mesa-toast" role="status" aria-live="polite">
+                    <span className="mesa-toast-icon">✓</span>
+                    <span>Mesa {mesaSeleccionada.numero_mesa} seleccionada</span>
+                </div>
+            )}
 
             <main className="page-container">
                 <header className="menu-header">
