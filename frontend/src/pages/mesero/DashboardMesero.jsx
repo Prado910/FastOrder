@@ -78,6 +78,8 @@ export default function DashboardMesero({
     onNuevoPedido,
     onCerrarSesion,
     onVerPedido,
+    mostrarToastPedidoEliminado,
+    onOcultarToastPedidoEliminado,
 }) {
     const [pedidos, setPedidos] = useState([]);
     const [busqueda, setBusqueda] = useState("");
@@ -103,6 +105,16 @@ export default function DashboardMesero({
 
         cargarPedidos();
     }, []);
+
+    useEffect(() => {
+        if (!mostrarToastPedidoEliminado) return;
+
+        const timer = setTimeout(() => {
+            onOcultarToastPedidoEliminado?.();
+        }, 2500);
+
+        return () => clearTimeout(timer);
+    }, [mostrarToastPedidoEliminado, onOcultarToastPedidoEliminado]);
 
     const pedidosActivos = useMemo(() => {
         return pedidos.filter(esPedidoActivo);
@@ -140,6 +152,13 @@ export default function DashboardMesero({
     return (
         <div className="dashboard-shell">
             <HeaderMesero usuario={usuario} onCerrarSesion={onCerrarSesion} />
+
+            {mostrarToastPedidoEliminado && (
+                <div className="pedido-eliminado-toast" role="status" aria-live="polite">
+                    <span className="pedido-eliminado-toast-icon">✓</span>
+                    <span>Pedido eliminado correctamente</span>
+                </div>
+            )}
 
             <main className="page-container dashboard-page">
                 <section className="dashboard-hero">

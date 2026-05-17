@@ -32,6 +32,7 @@ export default function App() {
   const [pedidoConfirmado, setPedidoConfirmado] = useState(null);
   const [pedidoEnSeguimiento, setPedidoEnSeguimiento] = useState(null);
   const [mostrarToastMesa, setMostrarToastMesa] = useState(false);
+  const [mostrarToastPedidoEliminado, setMostrarToastPedidoEliminado] = useState(false);
 
   function limpiarFlujoPedido() {
     setMesaSeleccionada(null);
@@ -39,6 +40,7 @@ export default function App() {
     setPedidoConfirmado(null);
     setPedidoEnSeguimiento(null);
     setMostrarToastMesa(false);
+    setMostrarToastPedidoEliminado(false);
   }
 
   function manejarLogin(usuarioAutenticado) {
@@ -91,6 +93,7 @@ export default function App() {
 
   function manejarPedidoEliminado() {
     setPedidoEnSeguimiento(null);
+    setMostrarToastPedidoEliminado(true);
     setPaso("dashboard");
   }
 
@@ -121,6 +124,8 @@ export default function App() {
         onNuevoPedido={irANuevoPedido}
         onCerrarSesion={cerrarSesion}
         onVerPedido={irASeguimientoPedido}
+        mostrarToastPedidoEliminado={mostrarToastPedidoEliminado}
+        onOcultarToastPedidoEliminado={() => setMostrarToastPedidoEliminado(false)}
       />
     );
   }
