@@ -39,6 +39,19 @@ function formatearEstado(estado) {
         .replace(/^\w/, (letra) => letra.toUpperCase());
 }
 
+function obtenerClaseEstado(estado) {
+    switch (estado) {
+        case "PENDIENTE":
+            return "status-pill status-pill-pendiente";
+        case "EN_PREPARACION":
+            return "status-pill status-pill-preparacion";
+        case "LISTO":
+            return "status-pill status-pill-listo";
+        default:
+            return "status-pill";
+    }
+}
+
 function esPedidoDeHoy(pedido) {
     if (!pedido.fecha_hora_creacion) return false;
 
@@ -277,7 +290,7 @@ export default function DashboardMesero({
                                         </div>
 
                                         <div className="pedido-row-side">
-                                            <span className="status-pill">
+                                            <span className={obtenerClaseEstado(pedido.estado)}>
                                                 {formatearEstado(pedido.estado)}
                                             </span>
 

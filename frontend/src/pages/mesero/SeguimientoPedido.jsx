@@ -26,6 +26,25 @@ function formatearEstado(estado) {
         .replace(/^\w/, (letra) => letra.toUpperCase());
 }
 
+function obtenerClaseEstado(estado) {
+    switch (estado) {
+        case "PENDIENTE":
+            return "status-pill status-pill-pendiente";
+        case "EN_PREPARACION":
+            return "status-pill status-pill-preparacion";
+        case "LISTO":
+            return "status-pill status-pill-listo";
+        case "ENTREGADO":
+            return "status-pill status-pill-entregado";
+        case "FACTURADO":
+            return "status-pill status-pill-facturado";
+        case "CANCELADO":
+            return "status-pill status-pill-cancelado";
+        default:
+            return "status-pill";
+    }
+}
+
 function contarProductos(items = []) {
     return items.reduce((acc, item) => acc + Number(item.cantidad || 0), 0);
 }
@@ -102,12 +121,10 @@ export default function SeguimientoPedido({
                 <section className="card seguimiento-card">
                     <div className="seguimiento-header">
                         <h2 className="section-title">Seguimiento del Pedido</h2>
-                        <span className="status-pill">
+                        <span className={obtenerClaseEstado(pedido.estado)}>
                             {formatearEstado(pedido.estado)}
                         </span>
                     </div>
-
-                    <p className="pedido-encontrado-msg">Pedido encontrado</p>
 
                     <div className="pedido-detail-summary">
                         <div>
