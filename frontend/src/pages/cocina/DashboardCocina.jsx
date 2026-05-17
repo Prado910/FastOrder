@@ -64,6 +64,8 @@ export default function DashboardCocina({ usuario, onCerrarSesion }) {
     const [actualizando, setActualizando] = useState(false);
     const [error, setError] = useState("");
     const [mensaje, setMensaje] = useState("");
+    const [toastCambioEstado, setToastCambioEstado] = useState(null);
+
 
     const cargarPedidos = useCallback(async () => {
         try {
@@ -102,6 +104,16 @@ export default function DashboardCocina({ usuario, onCerrarSesion }) {
         return () => clearInterval(intervalo);
     }, [cargarPedidos]);
 
+    useEffect(() => {
+        if (!toastCambioEstado) return;
+
+        const timer = setTimeout(() => {
+            setToastCambioEstado(null);
+        }, 2500);
+
+        return () => clearTimeout(timer);
+    }, [toastCambioEstado]);
+
     const pedidosPorEstado = useMemo(() => {
         return {
             PENDIENTE: pedidos.filter((pedido) => pedido.estado === "PENDIENTE"),
@@ -126,45 +138,6 @@ export default function DashboardCocina({ usuario, onCerrarSesion }) {
         setPedidoSeleccionado(null);
         setMensaje("");
         setError("");
-    }
-
-    async function cambiarEstadoPedido() {
-        if (!pedidoSeleccionado) {
-            setMensaje("Debe seleccionar un pedido para consultar el detalle");
-            return;
-        }
-
-        const nuevoEstado =
-            pedidoSeleccionado.estado === "PENDIENTE"
-                ? "EN_PREPARACION"
-                : "LISTO";
-
-        try {
-            setActualizando(true);
-            setMensaje("");
-
-            const pedidoActualizado = await actualizarEstadoPedido(
-                pedidoSeleccionado.id_pedido,
-                nuevoEstado
-            );
-
-            setPedidos((pedidosActuales) =>
-                pedidosActuales.map((pedido) =>
-                    pedido.id_pedido === pedidoActualizado.id_pedido
-                        ? pedidoActualizado
-                        : pedido
-                )
-            );
-
-            setPedidoSeleccionado(pedidoActualizado);
-            setEstadoActivo(pedidoActualizado.estado);
-            setMensaje("Estado del pedido actualizado correctamente.");
-        } catch (error) {
-            console.error(error);
-            setMensaje(error.message || "No se pudo actualizar el estado del pedido.");
-        } finally {
-            setActualizando(false);
-        }
     }
 
     function obtenerSiguienteEstadoPedido(pedido) {
@@ -193,6 +166,18 @@ export default function DashboardCocina({ usuario, onCerrarSesion }) {
         }
 
         return "";
+    }
+
+    function obtenerMensajeCambioEstado(nuevoEstado) {
+        if (nuevoEstado === "EN_PREPARACION") {
+            return "Pedido marcado como En Preparación";
+        }
+
+        if (nuevoEstado === "LISTO") {
+            return "Pedido marcado como Listo";
+        }
+
+        return "Estado del pedido actualizado";
     }
 
     async function cambiarEstadoPedido(pedidoBase = pedidoSeleccionado) {
@@ -235,7 +220,11 @@ export default function DashboardCocina({ usuario, onCerrarSesion }) {
             });
 
             setEstadoActivo(pedidoActualizado.estado);
-            setMensaje("Estado del pedido actualizado correctamente.");
+
+            setToastCambioEstado({
+                id: Date.now(),
+                mensaje: obtenerMensajeCambioEstado(nuevoEstado),
+            });
         } catch (error) {
             console.error(error);
             setMensaje(error.message || "No se pudo actualizar el estado del pedido.");
@@ -274,6 +263,13 @@ export default function DashboardCocina({ usuario, onCerrarSesion }) {
                     usuario={usuario}
                     onCerrarSesion={onCerrarSesion}
                 />
+
+                {toastCambioEstado && (
+                    <div className="cocina-estado-toast" role="status" aria-live="polite">
+                        <span className="cocina-estado-toast-icon">✓</span>
+                        <span>{toastCambioEstado.mensaje}</span>
+                    </div>
+                )}
 
                 <main className="kitchen-page kitchen-detail-page">
                     <button
@@ -342,12 +338,6 @@ export default function DashboardCocina({ usuario, onCerrarSesion }) {
                             ))}
                         </div>
 
-                        {mensaje && (
-                            <p className="kitchen-message">
-                                {mensaje}
-                            </p>
-                        )}
-
                         {puedeActualizar && (
                             <button
                                 type="button"
@@ -369,6 +359,13 @@ export default function DashboardCocina({ usuario, onCerrarSesion }) {
     return (
         <div className="dashboard-shell">
             <HeaderMesero usuario={usuario} onCerrarSesion={onCerrarSesion} />
+
+            {toastCambioEstado && (
+                <div className="cocina-estado-toast" role="status" aria-live="polite">
+                    <span className="cocina-estado-toast-icon">✓</span>
+                    <span>{toastCambioEstado.mensaje}</span>
+                </div>
+            )}
 
             <main className="kitchen-page">
                 <section className="kitchen-title-block">
