@@ -39,6 +39,7 @@ export default function MenuProductos({
     const [categoriaActiva, setCategoriaActiva] = useState("ENTRADAS");
     const [errorCantidad, setErrorCantidad] = useState("");
     const [errorObservacion, setErrorObservacion] = useState("");
+    const [productoAgregadoToast, setProductoAgregadoToast] = useState(null);
 
     useEffect(() => {
         async function cargarProductos() {
@@ -56,6 +57,16 @@ export default function MenuProductos({
 
         cargarProductos();
     }, []);
+
+    useEffect(() => {
+        if (!productoAgregadoToast) return;
+
+        const timer = setTimeout(() => {
+            setProductoAgregadoToast(null);
+        }, 2500);
+
+        return () => clearTimeout(timer);
+    }, [productoAgregadoToast]);
 
     useEffect(() => {
         if (!mostrarToastMesa) return;
@@ -132,6 +143,7 @@ export default function MenuProductos({
         };
 
         setItemsPedido((prev) => [...prev, nuevoItem]);
+        setProductoAgregadoToast(productoSeleccionado.nombre);
         cerrarPersonalizacion();
     }
 
@@ -142,6 +154,13 @@ export default function MenuProductos({
     return (
         <div className="dashboard-shell">
             <HeaderMesero usuario={usuario} onCerrarSesion={onCerrarSesion} />
+
+            {productoAgregadoToast && (
+                <div className="producto-toast" role="status" aria-live="polite">
+                    <span className="producto-toast-icon">✓</span>
+                    <span>{productoAgregadoToast} agregado al pedido</span>
+                </div>
+            )}
 
             {mostrarToastMesa && mesaSeleccionada && (
                 <div className="mesa-toast" role="status" aria-live="polite">
