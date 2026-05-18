@@ -102,6 +102,13 @@ export default function Login({ onLogin }) {
                         • cocina1 - Cocina
                     </button>
 
+                    <button
+                        type="button"
+                        onClick={() => cargarUsuarioPrueba("caja1")}
+                    >
+                        • caja1 - Caja
+                    </button>
+
                     <p>Contraseña: password</p>
                 </div>
             </section>

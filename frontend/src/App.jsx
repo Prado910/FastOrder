@@ -8,6 +8,7 @@ import ResumenPedido from "./pages/mesero/ResumenPedido";
 import PedidoConfirmado from "./pages/mesero/PedidoConfirmado";
 import SeguimientoPedido from "./pages/mesero/SeguimientoPedido";
 import DashboardCocina from "./pages/cocina/DashboardCocina";
+import DashboardCaja from "./pages/caja/DashboardCaja";
 
 function obtenerUsuarioGuardado() {
   try {
@@ -111,6 +112,15 @@ export default function App() {
   if (usuario.rol === "COCINA") {
     return (
       <DashboardCocina
+        usuario={usuario}
+        onCerrarSesion={cerrarSesion}
+      />
+    );
+  }
+
+  if (usuario.rol === "CAJA") {
+    return (
+      <DashboardCaja
         usuario={usuario}
         onCerrarSesion={cerrarSesion}
       />

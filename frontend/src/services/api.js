@@ -107,3 +107,19 @@ export async function actualizarEstadoPedido(idPedido, estado) {
 
     return handleResponse(response);
 }
+
+export async function getPedidosCaja({ criterio = "" } = {}) {
+    const params = new URLSearchParams();
+
+    if (criterio.trim()) {
+        params.append("criterio", criterio.trim());
+    }
+
+    const queryString = params.toString();
+    const url = queryString
+        ? `${API_BASE_URL}/pedidos/caja?${queryString}`
+        : `${API_BASE_URL}/pedidos/caja`;
+
+    const response = await fetch(url);
+    return handleResponse(response);
+}

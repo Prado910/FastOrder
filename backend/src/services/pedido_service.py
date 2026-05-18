@@ -17,6 +17,7 @@ from src.repositories.pedido_repository import (
     obtener_pedido_por_id,
     listar_pedidos,
     listar_pedidos_cocina,
+    listar_pedidos_caja,
     marcar_pedido_cancelado,
     actualizar_estado_pedido,
 )
@@ -249,3 +250,7 @@ def actualizar_estado_pedido_cocina(db: Session, id_pedido: int, nuevo_estado: s
     pedido_actualizado = obtener_pedido_por_id(db, id_pedido)
 
     return construir_respuesta_pedido(pedido_actualizado)
+
+def listar_pedidos_para_caja(db: Session, criterio: str | None = None):
+    pedidos = listar_pedidos_caja(db, criterio)
+    return [construir_respuesta_pedido(pedido) for pedido in pedidos]

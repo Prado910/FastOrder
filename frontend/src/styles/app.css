@@ -2213,3 +2213,413 @@ body {
         transform: translate(-50%, 0);
     }
 }
+
+/* Caja - HU6 */
+.cashier-page {
+    width: min(1060px, calc(100% - 64px));
+    margin: 0 auto;
+    padding: 34px 0 80px;
+}
+
+.cashier-title-block {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 34px;
+}
+
+.cashier-title-icon {
+    width: 28px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    color: #9f2942;
+    font-size: 32px;
+    font-weight: 500;
+}
+
+.cashier-title-block h1 {
+    margin: 0;
+    font-size: 32px;
+    line-height: 1.15;
+    color: #2a2a2a;
+}
+
+.cashier-title-block p {
+    margin: 10px 0 0;
+    font-size: 17px;
+    color: #6b7280;
+}
+
+.cashier-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-bottom: 32px;
+}
+
+.cashier-summary-card {
+    min-height: 132px;
+    border-radius: 10px;
+    padding: 26px 26px;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.cashier-summary-card p {
+    margin: 0 0 6px;
+    font-size: 15px;
+}
+
+.cashier-summary-card strong {
+    display: block;
+    margin-bottom: 12px;
+    font-size: 32px;
+    line-height: 1;
+}
+
+.cashier-summary-card span {
+    font-size: 15px;
+}
+
+.cashier-summary-pending {
+    background: linear-gradient(135deg, #f59e0b, #ea8500);
+}
+
+.cashier-summary-today {
+    background: linear-gradient(135deg, #12b886, #059669);
+}
+
+.cashier-summary-total {
+    background: linear-gradient(135deg, #8a1f33, #9f2942);
+}
+
+.cashier-orders-card {
+    background: #ffffff;
+    border: 1px solid #eadfdd;
+    border-radius: 10px;
+    padding: 22px 24px 30px;
+}
+
+.cashier-card-header h2 {
+    margin: 0 0 8px;
+    font-size: 17px;
+    color: #2f2f2f;
+}
+
+.cashier-card-header p {
+    margin: 0 0 28px;
+    font-size: 16px;
+    color: #6b7280;
+}
+
+.cashier-search-wrap {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.cashier-search-icon {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    font-size: 18px;
+    pointer-events: none;
+}
+
+.cashier-search-input {
+    width: 100%;
+    border: 0;
+    border-radius: 8px;
+    padding: 12px 42px;
+    min-height: 42px;
+    color: #4b5563;
+    outline: none;
+    background: #ffffff;
+    font-size: 14px;
+}
+
+.cashier-search-input:focus {
+    box-shadow: 0 0 0 2px rgba(159, 41, 66, 0.12);
+}
+
+.cashier-search-clear {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 0;
+    background: transparent;
+    color: #6b7280;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.cashier-table-wrap {
+    overflow-x: auto;
+}
+
+.cashier-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.cashier-table th {
+    text-align: left;
+    padding: 14px 8px;
+    border-bottom: 1px solid #eadfdd;
+    color: #2f2f2f;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.cashier-table td {
+    padding: 12px 8px;
+    border-bottom: 1px solid #f0e6e4;
+    color: #2f2f2f;
+    font-size: 15px;
+    vertical-align: middle;
+}
+
+.cashier-status-ready {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    padding: 4px 10px;
+    background: #10b981;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.cashier-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.cashier-detail-button,
+.cashier-invoice-button {
+    border-radius: 6px;
+    padding: 9px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.18s ease;
+}
+
+.cashier-detail-button {
+    border: 1px solid #eadfdd;
+    background: #ffffff;
+    color: #2f2f2f;
+}
+
+.cashier-detail-button:hover {
+    background: #f8f4f2;
+}
+
+.cashier-invoice-button {
+    border: 1px solid #9f2942;
+    background: #9f2942;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.cashier-invoice-button:hover {
+    background: #8c2132;
+    border-color: #8c2132;
+}
+
+.cashier-empty-state {
+    min-height: 170px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    color: #6b7280;
+}
+
+.cashier-empty-search {
+    min-height: 190px;
+}
+
+.cashier-empty-icon {
+    margin-bottom: 8px;
+    color: #b7b7b7;
+    font-size: 58px;
+}
+
+/* Detalle factura */
+.cashier-detail-page {
+    width: min(820px, calc(100% - 64px));
+    margin: 0 auto;
+    padding: 44px 0 80px;
+}
+
+.cashier-back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 34px;
+    border: 0;
+    background: transparent;
+    color: #2a2d34;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.invoice-detail-card {
+    background: #ffffff;
+    border: 1px solid #eadfdd;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.invoice-detail-hero {
+    min-height: 112px;
+    padding: 28px 30px;
+    background: linear-gradient(135deg, #9f2942, #c95543);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.invoice-detail-icon {
+    font-size: 32px;
+    line-height: 1;
+}
+
+.invoice-detail-hero h1 {
+    margin: 0 0 6px;
+    font-size: 28px;
+    font-weight: 500;
+}
+
+.invoice-detail-hero p {
+    margin: 0;
+    font-size: 16px;
+}
+
+.invoice-detail-body {
+    padding: 34px 28px 26px;
+}
+
+.invoice-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px 80px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid #eadfdd;
+    margin-bottom: 26px;
+}
+
+.invoice-info-grid p {
+    margin: 0 0 8px;
+    color: #6b7280;
+    font-size: 16px;
+}
+
+.invoice-info-grid strong {
+    color: #2f2f2f;
+    font-size: 18px;
+}
+
+.invoice-products-section h2 {
+    margin: 0 0 20px;
+    font-size: 20px;
+    color: #2f2f2f;
+}
+
+.invoice-products-list {
+    display: grid;
+    gap: 14px;
+    margin-bottom: 26px;
+}
+
+.invoice-product-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 18px 16px;
+    border-radius: 8px;
+    background: #f0ece8;
+}
+
+.invoice-product-row strong {
+    color: #2f2f2f;
+    font-size: 17px;
+}
+
+.invoice-product-row p {
+    margin: 8px 0 0;
+    color: #6b7280;
+    font-size: 15px;
+}
+
+.invoice-product-row span {
+    align-self: center;
+    color: #2f2f2f;
+    font-size: 17px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.invoice-product-note {
+    font-style: italic;
+}
+
+.invoice-total-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 28px;
+    border-top: 1px solid #eadfdd;
+    margin-bottom: 38px;
+}
+
+.invoice-total-row h2 {
+    margin: 0;
+    font-size: 28px;
+    color: #2f2f2f;
+}
+
+.invoice-total-row strong {
+    color: #9f2942;
+    font-size: 30px;
+}
+
+.invoice-detail-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.invoice-secondary-button,
+.invoice-primary-button {
+    min-height: 42px;
+    border-radius: 6px;
+    font-weight: 700;
+}
+
+@media (max-width: 900px) {
+
+    .cashier-page,
+    .cashier-detail-page {
+        width: min(100% - 32px, 720px);
+    }
+
+    .cashier-summary-grid,
+    .invoice-info-grid,
+    .invoice-detail-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .invoice-product-row {
+        flex-direction: column;
+    }
+}

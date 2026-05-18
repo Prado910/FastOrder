@@ -13,6 +13,7 @@ from src.services.pedido_service import (
     listar_todos_los_pedidos,
     eliminar_pedido,
     listar_pedidos_para_cocina,
+    listar_pedidos_para_caja,
     actualizar_estado_pedido_cocina,
 )
 
@@ -32,6 +33,14 @@ def get_pedidos(criterio: str | None = None, db: Session = Depends(get_db)):
 @router.get("/cocina", response_model=list[PedidoResponse])
 def get_pedidos_cocina(db: Session = Depends(get_db)):
     return listar_pedidos_para_cocina(db)
+
+
+@router.get("/caja", response_model=list[PedidoResponse])
+def get_pedidos_caja(
+    criterio: str | None = None,
+    db: Session = Depends(get_db),
+):
+    return listar_pedidos_para_caja(db, criterio)
 
 
 @router.patch("/{id_pedido}/estado", response_model=PedidoResponse)

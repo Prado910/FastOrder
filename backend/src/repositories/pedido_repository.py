@@ -95,3 +95,32 @@ def listar_pedidos_cocina(db: Session):
     )
 
     return db.execute(stmt).unique().scalars().all()
+
+def listar_pedidos_caja(db: Session, criterio: str | None = None):
+    stmt = (
+        select(Pedido)
+        .options(*opciones_pedido())
+        .where(Pedido.estado == "LISTO")
+        .order_by(Pedido.fecha_hora_creacion.desc())
+    )
+
+    texto = (criterio or "").strip()
+
+    if texto:
+        texto_mesa = texto.lower().replace("mesa", "").strip()
+
+        condiciones = [
+            Pedido.numero_pedido.ilike(f"%{texto}%"),
+            Pedido.estado.ilike(f"%{texto}%"),
+        ]
+
+        if texto.isdigit() or texto_mesa.isdigit():
+            numero = int(texto_mesa if texto_mesa.isdigit() else texto)
+            condiciones.extend([
+                Pedido.id_pedido == numero,
+                Pedido.id_mesa == numero,
+            ])
+
+        stmt = stmt.where(or_(*condiciones))
+
+    return db.execute(stmt).unique().scalars().all()

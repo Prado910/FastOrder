@@ -5,7 +5,7 @@ from src.repositories.usuario_repository import autenticar_usuario
 from src.schemas.usuario import LoginRequest
 
 
-ROLES_HABILITADOS = {"MESERO", "COCINA"}
+ROLES_HABILITADOS = {"MESERO", "COCINA", "CAJA"}
 
 
 def iniciar_sesion(db: Session, payload: LoginRequest):
