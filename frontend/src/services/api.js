@@ -123,3 +123,24 @@ export async function getPedidosCaja({ criterio = "" } = {}) {
     const response = await fetch(url);
     return handleResponse(response);
 }
+
+export async function crearFactura(payload) {
+    if (!payload?.id_pedido) {
+        throw new Error("Debe seleccionar un pedido válido para facturar");
+    }
+
+    const response = await fetch(`${API_BASE_URL}/facturas`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+    });
+
+    return handleResponse(response);
+}
+
+export async function getFacturas() {
+    const response = await fetch(`${API_BASE_URL}/facturas`);
+    return handleResponse(response);
+}

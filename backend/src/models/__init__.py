@@ -5,3 +5,4 @@ from src.models.pedido import Pedido
 from src.models.producto import Producto
 from src.models.rol import Rol
 from src.models.usuario import Usuario
+from src.models.factura import Factura

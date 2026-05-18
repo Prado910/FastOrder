@@ -2623,3 +2623,441 @@ body {
         flex-direction: column;
     }
 }
+
+/* HU7 - Propina */
+.cashier-top-toast {
+    position: fixed;
+    top: 36px;
+    left: 50%;
+    z-index: 40;
+    transform: translateX(-50%);
+    min-width: 390px;
+    min-height: 58px;
+    padding: 16px 22px;
+    border: 1px solid #bdf3d0;
+    border-radius: 8px;
+    background: #ecfdf3;
+    color: #047857;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.15);
+}
+
+.cashier-top-toast span {
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    background: #16a34a;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.cashier-top-toast p {
+    margin: 0;
+    font-weight: 600;
+}
+
+.cashier-tip-button {
+    border: 1px solid #9f2942;
+    border-radius: 6px;
+    padding: 9px 12px;
+    background: #ffffff;
+    color: #9f2942;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.cashier-tip-button:hover {
+    background: #fff3f5;
+}
+
+.cashier-tip-note {
+    display: block;
+    margin-top: 3px;
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.cashier-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    background: rgba(0, 0, 0, 0.48);
+    display: grid;
+    place-items: center;
+    padding: 24px;
+}
+
+.cashier-tip-modal {
+    position: relative;
+    width: min(560px, 100%);
+    border-radius: 8px;
+    background: #ffffff;
+    padding: 24px 28px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+}
+
+.cashier-tip-modal-close {
+    position: absolute;
+    top: 16px;
+    right: 18px;
+    border: 0;
+    background: transparent;
+    color: #6b7280;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.cashier-tip-modal-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 28px;
+}
+
+.cashier-tip-modal-header>span {
+    width: 20px;
+    height: 20px;
+    margin-top: 3px;
+    border: 1px solid #9f2942;
+    border-radius: 999px;
+    color: #9f2942;
+    display: grid;
+    place-items: center;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.cashier-tip-modal-header h2 {
+    margin: 0 0 8px;
+    color: #2f2f2f;
+    font-size: 22px;
+}
+
+.cashier-tip-modal-header p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 15px;
+}
+
+.cashier-tip-label {
+    display: grid;
+    gap: 8px;
+    color: #2f2f2f;
+    font-weight: 600;
+}
+
+.cashier-tip-label input {
+    min-height: 42px;
+    border: 1px solid #eadfdd;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 15px;
+    outline: none;
+}
+
+.cashier-tip-label input:focus {
+    border-color: #9f2942;
+    box-shadow: 0 0 0 3px rgba(159, 41, 66, 0.12);
+}
+
+.cashier-tip-helper {
+    margin: 8px 0 18px;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.cashier-tip-detail {
+    border-radius: 8px;
+    background: #f0ece8;
+    padding: 18px;
+    display: grid;
+    gap: 6px;
+    margin-bottom: 28px;
+}
+
+.cashier-tip-detail p {
+    margin: 0;
+    color: #6b7280;
+}
+
+.cashier-tip-detail strong,
+.cashier-tip-detail span {
+    color: #2f2f2f;
+}
+
+.cashier-tip-new {
+    color: #9f2942 !important;
+}
+
+.cashier-tip-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* HU7 - detalle con propina */
+.invoice-breakdown {
+    display: grid;
+    gap: 14px;
+    padding: 0 0 22px;
+    margin-bottom: 20px;
+}
+
+.invoice-breakdown div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #2f2f2f;
+    font-size: 16px;
+}
+
+.invoice-breakdown strong {
+    font-size: 17px;
+}
+
+.invoice-tip-breakdown span,
+.invoice-tip-breakdown strong {
+    color: #9f2942;
+}
+
+/* HU7 - factura generada */
+.invoice-success-page {
+    width: min(760px, calc(100% - 64px));
+    margin: 0 auto;
+    padding: 34px 0 70px;
+}
+
+.invoice-success-message {
+    min-height: 150px;
+    margin-bottom: 26px;
+    border: 1px solid #bdf3d0;
+    border-radius: 10px;
+    background: #ecfdf3;
+    display: grid;
+    place-items: center;
+    text-align: center;
+}
+
+.invoice-success-check {
+    width: 66px;
+    height: 66px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    background: #00c853;
+    color: #ffffff;
+    font-size: 34px;
+    font-weight: 700;
+}
+
+.invoice-success-message h1 {
+    margin: -14px 0 0;
+    color: #2f2f2f;
+    font-size: 27px;
+}
+
+.invoice-generated-card {
+    overflow: hidden;
+    border: 1px solid #eadfdd;
+    border-radius: 10px;
+    background: #ffffff;
+}
+
+.invoice-generated-hero {
+    min-height: 86px;
+    padding: 24px 28px;
+    background: linear-gradient(135deg, #9f2942, #c95543);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.invoice-generated-icon {
+    font-size: 30px;
+}
+
+.invoice-generated-hero h2 {
+    margin: 0 0 6px;
+    font-size: 26px;
+}
+
+.invoice-generated-hero p {
+    margin: 0;
+    font-size: 15px;
+}
+
+.invoice-generated-body {
+    padding: 48px 26px 26px;
+}
+
+.invoice-generated-info {
+    border-radius: 8px;
+    background: #f0ece8;
+    padding: 20px 18px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px 80px;
+    margin-bottom: 26px;
+}
+
+.invoice-generated-info p {
+    margin: 0 0 6px;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.invoice-generated-info strong {
+    color: #2f2f2f;
+    font-size: 16px;
+}
+
+.invoice-generated-summary h3 {
+    margin: 0 0 18px;
+    color: #2f2f2f;
+    font-size: 19px;
+}
+
+.invoice-generated-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 8px 0;
+    color: #2f2f2f;
+}
+
+.invoice-generated-tip-line {
+    color: #9f2942;
+}
+
+.invoice-generated-summary {
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eadfdd;
+    margin-bottom: 24px;
+}
+
+.invoice-generated-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.invoice-generated-total h3 {
+    margin: 0;
+    color: #2f2f2f;
+    font-size: 27px;
+}
+
+.invoice-generated-total strong {
+    color: #9f2942;
+    font-size: 30px;
+}
+
+.invoice-generated-status {
+    border: 1px solid #bdf3d0;
+    border-radius: 8px;
+    background: #ecfdf3;
+    padding: 18px;
+    margin-bottom: 40px;
+    text-align: center;
+    color: #047857;
+}
+
+.invoice-generated-status strong {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 17px;
+}
+
+.invoice-generated-status p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.invoice-generated-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.invoice-print-button,
+.invoice-back-panel-button {
+    min-height: 42px;
+    border-radius: 6px;
+    font-weight: 700;
+}
+
+.invoice-print-button {
+    border: 1px solid #eadfdd;
+    background: #ffffff;
+    color: #2f2f2f;
+}
+
+@media (max-width: 720px) {
+    .invoice-success-page {
+        width: min(100% - 32px, 640px);
+    }
+
+    .invoice-generated-info,
+    .invoice-generated-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .cashier-top-toast {
+        min-width: auto;
+        width: calc(100% - 32px);
+    }
+
+    .cashier-tip-modal-actions {
+        flex-direction: column;
+    }
+}
+
+/* HU7 - Pop-up de valor inválido */
+.cashier-invalid-top-toast {
+    position: fixed;
+    top: 76px;
+    left: 50%;
+    z-index: 80;
+    transform: translateX(-50%);
+    min-width: 410px;
+    max-width: calc(100% - 32px);
+    min-height: 54px;
+    padding: 14px 22px;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    background: #fff1f1;
+    color: #ff0000;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+}
+
+.cashier-invalid-top-toast span {
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    background: #ff0000;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.cashier-invalid-top-toast p {
+    margin: 0;
+    color: #ff0000;
+    font-size: 15px;
+    font-weight: 500;
+}

@@ -30,3 +30,16 @@ def autenticar_usuario(db: Session, username: str, clave: str):
     )
 
     return db.execute(stmt).scalar_one_or_none()
+
+def obtener_cajero_activo_por_id(db: Session, id_usuario: int):
+    stmt = (
+        select(Usuario)
+        .join(Rol, Usuario.id_rol == Rol.id_rol)
+        .where(
+            Usuario.id_usuario == id_usuario,
+            Usuario.estado == "A",
+            Rol.nombre == "CAJA",
+        )
+    )
+
+    return db.execute(stmt).scalar_one_or_none()

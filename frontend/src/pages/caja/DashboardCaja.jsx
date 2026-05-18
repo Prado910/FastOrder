@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 
 import HeaderMesero from "../../components/mesero/HeaderMesero";
 import {
-    getPedidos,
+    crearFactura,
+    getFacturas,
     getPedidosCaja,
 } from "../../services/api";
 
@@ -13,19 +14,19 @@ function formatearPrecio(valor) {
 function formatearFechaHora(fecha) {
     if (!fecha) return "--/--/---- --:--";
 
-    const fechaPedido = new Date(fecha);
+    const fechaBase = new Date(fecha);
 
-    if (Number.isNaN(fechaPedido.getTime())) {
+    if (Number.isNaN(fechaBase.getTime())) {
         return "--/--/---- --:--";
     }
 
-    const fechaFormateada = fechaPedido.toLocaleDateString("es-CO", {
+    const fechaFormateada = fechaBase.toLocaleDateString("es-CO", {
         day: "numeric",
         month: "numeric",
         year: "numeric",
     });
 
-    const horaFormateada = fechaPedido.toLocaleTimeString("es-CO", {
+    const horaFormateada = fechaBase.toLocaleTimeString("es-CO", {
         hour: "2-digit",
         minute: "2-digit",
         hour12: false,
@@ -34,20 +35,52 @@ function formatearFechaHora(fecha) {
     return `${fechaFormateada} ${horaFormateada}`;
 }
 
-function esPedidoDeHoy(pedido) {
-    if (!pedido.fecha_hora_creacion) return false;
+function formatearFecha(fecha) {
+    if (!fecha) return "--/--/----";
 
-    const fechaPedido = new Date(pedido.fecha_hora_creacion);
+    const fechaBase = new Date(fecha);
+
+    if (Number.isNaN(fechaBase.getTime())) {
+        return "--/--/----";
+    }
+
+    return fechaBase.toLocaleDateString("es-CO", {
+        day: "numeric",
+        month: "numeric",
+        year: "numeric",
+    });
+}
+
+function formatearHora(fecha) {
+    if (!fecha) return "--:--";
+
+    const fechaBase = new Date(fecha);
+
+    if (Number.isNaN(fechaBase.getTime())) {
+        return "--:--";
+    }
+
+    return fechaBase.toLocaleTimeString("es-CO", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+    });
+}
+
+function esDeHoy(fecha) {
+    if (!fecha) return false;
+
+    const fechaBase = new Date(fecha);
     const hoy = new Date();
 
-    if (Number.isNaN(fechaPedido.getTime())) {
+    if (Number.isNaN(fechaBase.getTime())) {
         return false;
     }
 
     return (
-        fechaPedido.getFullYear() === hoy.getFullYear() &&
-        fechaPedido.getMonth() === hoy.getMonth() &&
-        fechaPedido.getDate() === hoy.getDate()
+        fechaBase.getFullYear() === hoy.getFullYear() &&
+        fechaBase.getMonth() === hoy.getMonth() &&
+        fechaBase.getDate() === hoy.getDate()
     );
 }
 
@@ -66,37 +99,122 @@ function formatearEstado(estado) {
 
 export default function DashboardCaja({ usuario, onCerrarSesion }) {
     const [pedidosCaja, setPedidosCaja] = useState([]);
-    const [pedidosGenerales, setPedidosGenerales] = useState([]);
+    const [facturas, setFacturas] = useState([]);
     const [pedidoSeleccionado, setPedidoSeleccionado] = useState(null);
+    const [pedidoPropina, setPedidoPropina] = useState(null);
+    const [facturaGenerada, setFacturaGenerada] = useState(null);
+    const [propinasPorPedido, setPropinasPorPedido] = useState({});
     const [busqueda, setBusqueda] = useState("");
+    const [montoPropina, setMontoPropina] = useState("");
+    const [popupPropinaInvalida, setPopupPropinaInvalida] = useState("");
+    const [toastPropina, setToastPropina] = useState("");
     const [loading, setLoading] = useState(true);
+    const [loadingFactura, setLoadingFactura] = useState(false);
     const [error, setError] = useState("");
 
-    async function cargarPedidos() {
+
+    async function cargarDatos() {
         try {
             setLoading(true);
             setError("");
 
-            const [pedidosListos, todosLosPedidos] = await Promise.all([
+            const [pedidosListos, facturasGeneradas] = await Promise.all([
                 getPedidosCaja(),
-                getPedidos(),
+                getFacturas(),
             ]);
 
             setPedidosCaja(pedidosListos);
-            setPedidosGenerales(todosLosPedidos);
+            setFacturas(facturasGeneradas);
         } catch (error) {
             console.error(error);
             setPedidosCaja([]);
-            setPedidosGenerales([]);
-            setError("No se pudieron cargar los pedidos de caja.");
+            setFacturas([]);
+            setError("No se pudieron cargar los datos de caja.");
         } finally {
             setLoading(false);
         }
     }
 
     useEffect(() => {
-        cargarPedidos();
+        cargarDatos();
     }, []);
+
+    function obtenerPropinaPedido(pedido) {
+        if (!pedido) return 0;
+        return Number(propinasPorPedido[pedido.id_pedido] || 0);
+    }
+
+    function obtenerTotalConPropina(pedido) {
+        return Number(pedido.total || 0) + obtenerPropinaPedido(pedido);
+    }
+
+    function mostrarToastPropina() {
+        setToastPropina("Propina agregada correctamente");
+
+        setTimeout(() => {
+            setToastPropina("");
+        }, 2500);
+    }
+
+    function abrirModalPropina(pedido) {
+        const propinaActual = obtenerPropinaPedido(pedido);
+
+        setPedidoPropina(pedido);
+        setMontoPropina(propinaActual ? String(propinaActual) : "");
+        setErrorPropina("");
+    }
+
+    function cerrarModalPropina() {
+        setPedidoPropina(null);
+        setMontoPropina("");
+        setPopupPropinaInvalida("");
+    }
+
+    function guardarPropina() {
+        const valor = Number(montoPropina || 0);
+
+        if (!Number.isFinite(valor) || valor < 0) {
+            setPopupPropinaInvalida("Valor invalido para agregar a la propina");
+
+            setTimeout(() => {
+                setPopupPropinaInvalida("");
+            }, 3000);
+
+            return;
+        }
+
+        setPropinasPorPedido((propinasActuales) => ({
+            ...propinasActuales,
+            [pedidoPropina.id_pedido]: valor,
+        }));
+
+        cerrarModalPropina();
+        mostrarToastPropina();
+    }
+
+    async function facturarPedido(pedido) {
+        try {
+            setLoadingFactura(true);
+            setError("");
+
+            const factura = await crearFactura({
+                id_pedido: pedido.id_pedido,
+                id_usuario_cajero: usuario.id_usuario,
+                propina: obtenerPropinaPedido(pedido),
+            });
+
+            setFacturaGenerada(factura);
+            setPedidoSeleccionado(null);
+            setPedidoPropina(null);
+
+            await cargarDatos();
+        } catch (error) {
+            console.error(error);
+            setError(error.message || "No se pudo generar la factura.");
+        } finally {
+            setLoadingFactura(false);
+        }
+    }
 
     const pedidosFiltrados = useMemo(() => {
         const texto = busqueda.trim().toLowerCase();
@@ -110,52 +228,154 @@ export default function DashboardCaja({ usuario, onCerrarSesion }) {
             const mesa = String(obtenerMesa(pedido) || "").toLowerCase();
             const textoMesa = `mesa ${mesa}`;
             const estado = String(pedido.estado || "").toLowerCase();
+            const mesero = String(pedido.mesero || "").toLowerCase();
 
             return (
                 numeroPedido.includes(texto) ||
                 mesa.includes(texto) ||
                 textoMesa.includes(texto) ||
-                estado.includes(texto)
+                estado.includes(texto) ||
+                mesero.includes(texto)
             );
         });
     }, [pedidosCaja, busqueda]);
 
-    const pedidosFacturadosHoy = useMemo(() => {
-        return pedidosGenerales.filter(
-            (pedido) => pedido.estado === "FACTURADO" && esPedidoDeHoy(pedido)
-        );
-    }, [pedidosGenerales]);
+    const facturasHoy = useMemo(() => {
+        return facturas.filter((factura) => esDeHoy(factura.fecha_hora_factura));
+    }, [facturas]);
 
     const totalPendiente = useMemo(() => {
         return pedidosCaja.reduce(
-            (total, pedido) => total + Number(pedido.total || 0),
+            (total, pedido) => total + obtenerTotalConPropina(pedido),
             0
         );
-    }, [pedidosCaja]);
+    }, [pedidosCaja, propinasPorPedido]);
 
     const totalDia = useMemo(() => {
-        return pedidosFacturadosHoy.reduce(
-            (total, pedido) => total + Number(pedido.total || 0),
+        return facturasHoy.reduce(
+            (total, factura) => total + Number(factura.total || 0),
             0
         );
-    }, [pedidosFacturadosHoy]);
+    }, [facturasHoy]);
 
     const busquedaActiva = busqueda.trim().length > 0;
     const sinResultados = busquedaActiva && pedidosFiltrados.length === 0;
 
-    function limpiarBusqueda() {
-        setBusqueda("");
-    }
+    if (facturaGenerada) {
+        return (
+            <div className="dashboard-shell">
+                <HeaderMesero
+                    usuario={usuario}
+                    onCerrarSesion={onCerrarSesion}
+                />
 
-    function abrirDetalle(pedido) {
-        setPedidoSeleccionado(pedido);
-    }
+                <main className="invoice-success-page">
+                    <section className="invoice-success-message">
+                        <div className="invoice-success-check">✓</div>
+                        <h1>¡Factura generada con éxito!</h1>
+                    </section>
 
-    function volverAlListado() {
-        setPedidoSeleccionado(null);
+                    <section className="invoice-generated-card">
+                        <header className="invoice-generated-hero">
+                            <div className="invoice-generated-icon">▤</div>
+
+                            <div>
+                                <h2>Factura {facturaGenerada.numero_factura}</h2>
+                                <p>{formatearFecha(facturaGenerada.fecha_hora_factura)}</p>
+                            </div>
+                        </header>
+
+                        <div className="invoice-generated-body">
+                            <section className="invoice-generated-info">
+                                <div>
+                                    <p>Pedido</p>
+                                    <strong>{facturaGenerada.numero_pedido}</strong>
+                                </div>
+
+                                <div>
+                                    <p>Mesa</p>
+                                    <strong>{facturaGenerada.numero_mesa}</strong>
+                                </div>
+
+                                <div>
+                                    <p>Atendido por</p>
+                                    <strong>{facturaGenerada.mesero || "No registrado"}</strong>
+                                </div>
+
+                                <div>
+                                    <p>Hora</p>
+                                    <strong>{formatearHora(facturaGenerada.fecha_hora_factura)}</strong>
+                                </div>
+                            </section>
+
+                            <section className="invoice-generated-summary">
+                                <h3>Resumen de Compra</h3>
+
+                                {(facturaGenerada.items || []).map((item) => (
+                                    <div
+                                        key={`${facturaGenerada.id_factura}-${item.id_producto}`}
+                                        className="invoice-generated-line"
+                                    >
+                                        <span>
+                                            {item.cantidad}x {item.nombre_producto}
+                                        </span>
+
+                                        <strong>
+                                            $ {formatearPrecio(item.subtotal)}
+                                        </strong>
+                                    </div>
+                                ))}
+
+                                {Number(facturaGenerada.propina || 0) > 0 && (
+                                    <div className="invoice-generated-line invoice-generated-tip-line">
+                                        <span>Propina</span>
+                                        <strong>
+                                            $ {formatearPrecio(facturaGenerada.propina)}
+                                        </strong>
+                                    </div>
+                                )}
+                            </section>
+
+                            <section className="invoice-generated-total">
+                                <h3>Total:</h3>
+                                <strong>$ {formatearPrecio(facturaGenerada.total)}</strong>
+                            </section>
+
+                            <section className="invoice-generated-status">
+                                <strong>Estado actualizado a: Facturado</strong>
+                                <p>
+                                    La mesa {facturaGenerada.numero_mesa} ha sido liberada
+                                </p>
+                            </section>
+
+                            <section className="invoice-generated-actions">
+                                <button
+                                    type="button"
+                                    className="btn invoice-print-button"
+                                    onClick={() => window.print()}
+                                >
+                                    ⎙ Imprimir
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className="btn btn-primary invoice-back-panel-button"
+                                    onClick={() => setFacturaGenerada(null)}
+                                >
+                                    Volver al Panel
+                                </button>
+                            </section>
+                        </div>
+                    </section>
+                </main>
+            </div>
+        );
     }
 
     if (pedidoSeleccionado) {
+        const propinaDetalle = obtenerPropinaPedido(pedidoSeleccionado);
+        const totalDetalle = obtenerTotalConPropina(pedidoSeleccionado);
+
         return (
             <div className="dashboard-shell">
                 <HeaderMesero
@@ -167,10 +387,12 @@ export default function DashboardCaja({ usuario, onCerrarSesion }) {
                     <button
                         type="button"
                         className="cashier-back-button"
-                        onClick={volverAlListado}
+                        onClick={() => setPedidoSeleccionado(null)}
                     >
                         ← Volver
                     </button>
+
+                    {error && <p className="error-text">{error}</p>}
 
                     <section className="invoice-detail-card">
                         <header className="invoice-detail-hero">
@@ -211,7 +433,7 @@ export default function DashboardCaja({ usuario, onCerrarSesion }) {
                                 <h2>Productos</h2>
 
                                 <div className="invoice-products-list">
-                                    {pedidoSeleccionado.items.map((item) => (
+                                    {(pedidoSeleccionado.items || []).map((item) => (
                                         <article
                                             key={`${item.id_producto}-${item.nombre_producto}`}
                                             className="invoice-product-row"
@@ -229,27 +451,36 @@ export default function DashboardCaja({ usuario, onCerrarSesion }) {
                                                 )}
                                             </div>
 
-                                            <span>
-                                                $ {formatearPrecio(item.subtotal)}
-                                            </span>
+                                            <span>$ {formatearPrecio(item.subtotal)}</span>
                                         </article>
                                     ))}
                                 </div>
                             </section>
 
+                            <section className="invoice-breakdown">
+                                <div>
+                                    <span>Subtotal:</span>
+                                    <strong>$ {formatearPrecio(pedidoSeleccionado.total)}</strong>
+                                </div>
+
+                                {propinaDetalle > 0 && (
+                                    <div className="invoice-tip-breakdown">
+                                        <span>Propina:</span>
+                                        <strong>$ {formatearPrecio(propinaDetalle)}</strong>
+                                    </div>
+                                )}
+                            </section>
+
                             <section className="invoice-total-row">
                                 <h2>Total:</h2>
-
-                                <strong>
-                                    $ {formatearPrecio(pedidoSeleccionado.total)}
-                                </strong>
+                                <strong>$ {formatearPrecio(totalDetalle)}</strong>
                             </section>
 
                             <section className="invoice-detail-actions">
                                 <button
                                     type="button"
                                     className="btn invoice-secondary-button"
-                                    onClick={volverAlListado}
+                                    onClick={() => setPedidoSeleccionado(null)}
                                 >
                                     Volver
                                 </button>
@@ -257,11 +488,10 @@ export default function DashboardCaja({ usuario, onCerrarSesion }) {
                                 <button
                                     type="button"
                                     className="btn btn-primary invoice-primary-button"
-                                    onClick={() => {
-                                        alert("La generación de factura se desarrolla en la HU7.");
-                                    }}
+                                    onClick={() => facturarPedido(pedidoSeleccionado)}
+                                    disabled={loadingFactura}
                                 >
-                                    Facturar
+                                    {loadingFactura ? "Facturando..." : "Facturar"}
                                 </button>
                             </section>
                         </div>
@@ -277,6 +507,20 @@ export default function DashboardCaja({ usuario, onCerrarSesion }) {
                 usuario={usuario}
                 onCerrarSesion={onCerrarSesion}
             />
+
+            {popupPropinaInvalida && (
+                <div className="cashier-invalid-top-toast">
+                    <span>!</span>
+                    <p>{popupPropinaInvalida}</p>
+                </div>
+            )}
+
+            {toastPropina && (
+                <div className="cashier-top-toast">
+                    <span>✓</span>
+                    <p>{toastPropina}</p>
+                </div>
+            )}
 
             <main className="cashier-page">
                 <section className="cashier-title-block">
@@ -297,7 +541,7 @@ export default function DashboardCaja({ usuario, onCerrarSesion }) {
 
                     <article className="cashier-summary-card cashier-summary-today">
                         <p>Facturados Hoy</p>
-                        <strong>{pedidosFacturadosHoy.length}</strong>
+                        <strong>{facturasHoy.length}</strong>
                         <span>$ {formatearPrecio(totalDia)}</span>
                     </article>
 
@@ -328,7 +572,7 @@ export default function DashboardCaja({ usuario, onCerrarSesion }) {
                             <button
                                 type="button"
                                 className="cashier-search-clear"
-                                onClick={limpiarBusqueda}
+                                onClick={() => setBusqueda("")}
                                 aria-label="Limpiar búsqueda"
                             >
                                 ×
@@ -375,47 +619,145 @@ export default function DashboardCaja({ usuario, onCerrarSesion }) {
                                 </thead>
 
                                 <tbody>
-                                    {pedidosFiltrados.map((pedido) => (
-                                        <tr key={pedido.id_pedido}>
-                                            <td>{pedido.numero_pedido}</td>
-                                            <td>Mesa {obtenerMesa(pedido)}</td>
-                                            <td>
-                                                <span className="cashier-status-ready">
-                                                    {formatearEstado(pedido.estado)}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <strong>
-                                                    $ {formatearPrecio(pedido.total)}
-                                                </strong>
-                                            </td>
-                                            <td>
-                                                <div className="cashier-actions">
-                                                    <button
-                                                        type="button"
-                                                        className="cashier-detail-button"
-                                                        onClick={() => abrirDetalle(pedido)}
-                                                    >
-                                                        Ver Detalle
-                                                    </button>
+                                    {pedidosFiltrados.map((pedido) => {
+                                        const propina = obtenerPropinaPedido(pedido);
+                                        const totalConPropina = obtenerTotalConPropina(pedido);
 
-                                                    <button
-                                                        type="button"
-                                                        className="cashier-invoice-button"
-                                                        onClick={() => abrirDetalle(pedido)}
-                                                    >
-                                                        Generar Factura
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                        return (
+                                            <tr key={pedido.id_pedido}>
+                                                <td>{pedido.numero_pedido}</td>
+                                                <td>Mesa {obtenerMesa(pedido)}</td>
+                                                <td>
+                                                    <span className="cashier-status-ready">
+                                                        {formatearEstado(pedido.estado)}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <strong>
+                                                        $ {formatearPrecio(totalConPropina)}
+                                                    </strong>
+
+                                                    {propina > 0 && (
+                                                        <small className="cashier-tip-note">
+                                                            Incluye propina: $ {formatearPrecio(propina)}
+                                                        </small>
+                                                    )}
+                                                </td>
+                                                <td>
+                                                    <div className="cashier-actions">
+                                                        <button
+                                                            type="button"
+                                                            className="cashier-detail-button"
+                                                            onClick={() => setPedidoSeleccionado(pedido)}
+                                                        >
+                                                            Ver Detalle
+                                                        </button>
+
+                                                        <button
+                                                            type="button"
+                                                            className="cashier-tip-button"
+                                                            onClick={() => abrirModalPropina(pedido)}
+                                                        >
+                                                            ⓢ Propina
+                                                        </button>
+
+                                                        <button
+                                                            type="button"
+                                                            className="cashier-invoice-button"
+                                                            onClick={() => facturarPedido(pedido)}
+                                                            disabled={loadingFactura}
+                                                        >
+                                                            Generar Factura
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
                     )}
                 </section>
             </main>
+
+            {pedidoPropina && (
+                <div className="cashier-modal-backdrop">
+                    <section className="cashier-tip-modal">
+                        <button
+                            type="button"
+                            className="cashier-tip-modal-close"
+                            onClick={cerrarModalPropina}
+                            aria-label="Cerrar"
+                        >
+                            ×
+                        </button>
+
+                        <header className="cashier-tip-modal-header">
+                            <span>$</span>
+
+                            <div>
+                                <h2>Agregar Propina</h2>
+                                <p>Ingresa el monto de la propina para este pedido</p>
+                            </div>
+                        </header>
+
+                        <label className="cashier-tip-label">
+                            Monto de la Propina (COP)
+
+                            <input
+                                type="number"
+                                min="0"
+                                step="100"
+                                value={montoPropina}
+                                onChange={(event) => {
+                                    setMontoPropina(event.target.value);
+                                    setPopupPropinaInvalida("");
+                                }}
+                                placeholder="2000"
+                            />
+                        </label>
+
+                        <p className="cashier-tip-helper">
+                            Ingresa el valor en pesos colombianos
+                        </p>
+
+                        <section className="cashier-tip-detail">
+                            <p>Detalle del pedido:</p>
+                            <strong>{pedidoPropina.numero_pedido}</strong>
+                            <span>
+                                Subtotal: $ {formatearPrecio(pedidoPropina.total)}
+                            </span>
+                            <strong className="cashier-tip-new">
+                                Nueva propina: $ {formatearPrecio(Number(montoPropina || 0))}
+                            </strong>
+                            <strong className="cashier-tip-new">
+                                Nuevo total: $ {formatearPrecio(
+                                    Number(pedidoPropina.total || 0) + Number(montoPropina || 0)
+                                )}
+                            </strong>
+                        </section>
+
+                        <footer className="cashier-tip-modal-actions">
+                            <button
+                                type="button"
+                                className="btn"
+                                onClick={cerrarModalPropina}
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                type="button"
+                                className="btn btn-primary"
+                                onClick={guardarPropina}
+                            >
+                                Agregar Propina
+                            </button>
+                        </footer>
+                    </section>
+                </div>
+            )}
         </div>
     );
 }
