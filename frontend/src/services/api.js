@@ -4,19 +4,21 @@ const API_BASE_URL = "/api";
 async function handleResponse(response) {
     if (!response.ok) {
         let message = "Ocurrió un error en la petición";
+
         try {
             const errorData = await response.json();
             message = errorData.detail || message;
         } catch {
             // Si la respuesta no viene en JSON, se deja el mensaje por defecto
         }
+
         throw new Error(message);
     }
 
     return response.json();
 }
 
-// Obtiene todas las mesas (sin filtrar por estado)
+// Obtiene todas las mesas
 export async function getMesas() {
     const response = await fetch(`${API_BASE_URL}/mesas`);
     return handleResponse(response);
@@ -28,7 +30,7 @@ export async function getMesasDisponibles() {
     return handleResponse(response);
 }
 
-// Obtiene las mesas disponibles para asignar un pedido
+// Obtiene los productos visibles en el menú
 export async function getProductos() {
     const response = await fetch(`${API_BASE_URL}/productos`);
     return handleResponse(response);
@@ -54,7 +56,45 @@ export async function getPedidos({ criterio = "" } = {}) {
         params.append("criterio", criterio.trim());
     }
 
-    const response = await fetch(`${API_BASE_URL}/pedidos?${params.toString()}`);
+    const queryString = params.toString();
+    const url = queryString
+        ? `${API_BASE_URL}/pedidos?${queryString}`
+        : `${API_BASE_URL}/pedidos`;
+
+    const response = await fetch(url);
+    return handleResponse(response);
+}
+
+export async function getPedidosAdmin({
+    criterio = "",
+    estado = "TODOS",
+    fechaDesde = "",
+    fechaHasta = "",
+} = {}) {
+    const params = new URLSearchParams();
+
+    if (criterio.trim()) {
+        params.append("criterio", criterio.trim());
+    }
+
+    if (estado && estado !== "TODOS") {
+        params.append("estado", estado);
+    }
+
+    if (fechaDesde) {
+        params.append("fecha_desde", fechaDesde);
+    }
+
+    if (fechaHasta) {
+        params.append("fecha_hasta", fechaHasta);
+    }
+
+    const queryString = params.toString();
+    const url = queryString
+        ? `${API_BASE_URL}/pedidos/admin?${queryString}`
+        : `${API_BASE_URL}/pedidos/admin`;
+
+    const response = await fetch(url);
     return handleResponse(response);
 }
 
@@ -125,10 +165,6 @@ export async function getPedidosCaja({ criterio = "" } = {}) {
 }
 
 export async function crearFactura(payload) {
-    if (!payload?.id_pedido) {
-        throw new Error("Debe seleccionar un pedido válido para facturar");
-    }
-
     const response = await fetch(`${API_BASE_URL}/facturas`, {
         method: "POST",
         headers: {

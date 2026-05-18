@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -11,6 +13,7 @@ from src.services.pedido_service import (
     registrar_pedido,
     consultar_pedido,
     listar_todos_los_pedidos,
+    listar_pedidos_para_admin,
     eliminar_pedido,
     listar_pedidos_para_cocina,
     listar_pedidos_para_caja,
@@ -28,6 +31,23 @@ def post_pedido(payload: PedidoCreate, db: Session = Depends(get_db)):
 @router.get("", response_model=list[PedidoResponse])
 def get_pedidos(criterio: str | None = None, db: Session = Depends(get_db)):
     return listar_todos_los_pedidos(db, criterio)
+
+
+@router.get("/admin", response_model=list[PedidoResponse])
+def get_pedidos_admin(
+    criterio: str | None = None,
+    estado: str | None = None,
+    fecha_desde: date | None = None,
+    fecha_hasta: date | None = None,
+    db: Session = Depends(get_db),
+):
+    return listar_pedidos_para_admin(
+        db=db,
+        criterio=criterio,
+        estado=estado,
+        fecha_desde=fecha_desde,
+        fecha_hasta=fecha_hasta,
+    )
 
 
 @router.get("/cocina", response_model=list[PedidoResponse])

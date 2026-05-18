@@ -9,24 +9,14 @@ import PedidoConfirmado from "./pages/mesero/PedidoConfirmado";
 import SeguimientoPedido from "./pages/mesero/SeguimientoPedido";
 import DashboardCocina from "./pages/cocina/DashboardCocina";
 import DashboardCaja from "./pages/caja/DashboardCaja";
-
-function obtenerUsuarioGuardado() {
-  try {
-    const usuarioGuardado = sessionStorage.getItem("usuario");
-
-    if (!usuarioGuardado) {
-      return null;
-    }
-
-    return JSON.parse(usuarioGuardado);
-  } catch {
-    sessionStorage.removeItem("usuario");
-    return null;
-  }
-}
+import DashboardAdmin from "./pages/admin/DashboardAdmin";
 
 export default function App() {
-  const [usuario, setUsuario] = useState(obtenerUsuarioGuardado);
+  const [usuario, setUsuario] = useState(() => {
+    const usuarioGuardado = sessionStorage.getItem("usuario");
+    return usuarioGuardado ? JSON.parse(usuarioGuardado) : null;
+  });
+
   const [paso, setPaso] = useState("dashboard");
   const [mesaSeleccionada, setMesaSeleccionada] = useState(null);
   const [itemsPedido, setItemsPedido] = useState([]);
@@ -34,6 +24,12 @@ export default function App() {
   const [pedidoEnSeguimiento, setPedidoEnSeguimiento] = useState(null);
   const [mostrarToastMesa, setMostrarToastMesa] = useState(false);
   const [mostrarToastPedidoEliminado, setMostrarToastPedidoEliminado] = useState(false);
+
+  function manejarLogin(usuarioAutenticado) {
+    sessionStorage.setItem("usuario", JSON.stringify(usuarioAutenticado));
+    setUsuario(usuarioAutenticado);
+    setPaso("dashboard");
+  }
 
   function limpiarFlujoPedido() {
     setMesaSeleccionada(null);
@@ -44,9 +40,9 @@ export default function App() {
     setMostrarToastPedidoEliminado(false);
   }
 
-  function manejarLogin(usuarioAutenticado) {
-    setUsuario(usuarioAutenticado);
-    sessionStorage.setItem("usuario", JSON.stringify(usuarioAutenticado));
+  function cerrarSesion() {
+    sessionStorage.removeItem("usuario");
+    setUsuario(null);
     limpiarFlujoPedido();
     setPaso("dashboard");
   }
@@ -55,12 +51,12 @@ export default function App() {
     setMesaSeleccionada(null);
     setItemsPedido([]);
     setPedidoConfirmado(null);
+    setPedidoEnSeguimiento(null);
     setPaso("mesas");
   }
 
-  function irASeguimientoPedido(pedido) {
-    setPedidoEnSeguimiento(pedido);
-    setPaso("seguimiento");
+  function volverADashboard() {
+    setPaso("dashboard");
   }
 
   function manejarMesaSeleccionada(mesa) {
@@ -69,13 +65,7 @@ export default function App() {
     setPaso("productos");
   }
 
-  function volverADashboard() {
-    limpiarFlujoPedido();
-    setPaso("dashboard");
-  }
-
   function editarMesa() {
-    setMesaSeleccionada(null);
     setPaso("mesas");
   }
 
@@ -89,7 +79,14 @@ export default function App() {
 
   function manejarPedidoConfirmado(pedido) {
     setPedidoConfirmado(pedido);
+    setMesaSeleccionada(null);
+    setItemsPedido([]);
     setPaso("confirmado");
+  }
+
+  function irASeguimientoPedido(pedido) {
+    setPedidoEnSeguimiento(pedido);
+    setPaso("seguimiento");
   }
 
   function manejarPedidoEliminado() {
@@ -98,15 +95,17 @@ export default function App() {
     setPaso("dashboard");
   }
 
-  function cerrarSesion() {
-    sessionStorage.removeItem("usuario");
-    setUsuario(null);
-    limpiarFlujoPedido();
-    setPaso("dashboard");
-  }
-
   if (!usuario) {
     return <Login onLogin={manejarLogin} />;
+  }
+
+  if (usuario.rol === "ADMINISTRADOR") {
+    return (
+      <DashboardAdmin
+        usuario={usuario}
+        onCerrarSesion={cerrarSesion}
+      />
+    );
   }
 
   if (usuario.rol === "COCINA") {

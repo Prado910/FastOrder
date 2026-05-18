@@ -16,6 +16,7 @@ from src.repositories.pedido_repository import (
     actualizar_mesa_a_libre,
     obtener_pedido_por_id,
     listar_pedidos,
+    listar_pedidos_admin,
     listar_pedidos_cocina,
     listar_pedidos_caja,
     marcar_pedido_cancelado,
@@ -135,6 +136,35 @@ def consultar_pedido(db: Session, id_pedido: int):
 
 def listar_todos_los_pedidos(db: Session, criterio: str | None = None):
     pedidos = listar_pedidos(db, criterio)
+    return [construir_respuesta_pedido(pedido) for pedido in pedidos]
+
+
+def listar_pedidos_para_admin(
+    db: Session,
+    criterio: str | None = None,
+    estado: str | None = None,
+    fecha_desde=None,
+    fecha_hasta=None,
+):
+    if fecha_desde and fecha_hasta and fecha_desde > fecha_hasta:
+        raise HTTPException(
+            status_code=400,
+            detail="El rango de fechas no es válido"
+        )
+
+    estado_normalizado = None
+
+    if estado and estado != "TODOS":
+        estado_normalizado = estado
+
+    pedidos = listar_pedidos_admin(
+        db=db,
+        criterio=criterio,
+        estado=estado_normalizado,
+        fecha_desde=fecha_desde,
+        fecha_hasta=fecha_hasta,
+    )
+
     return [construir_respuesta_pedido(pedido) for pedido in pedidos]
 
 
