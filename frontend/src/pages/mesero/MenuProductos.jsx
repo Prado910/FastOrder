@@ -122,6 +122,12 @@ export default function MenuProductos({
             setErrorCantidad("No puedes agregar un producto con cantidad cero o menor.");
             return;
         }
+
+        if (cantidad > 99) {
+            setErrorCantidad("La cantidad del producto es inválida");
+            return;
+        }
+
         setErrorCantidad("");
 
         const notaLimpia = observacion.trim();
@@ -256,6 +262,7 @@ export default function MenuProductos({
                             <input
                                 type="number"
                                 min="1"
+                                max="99"
                                 value={cantidad}
                                 onChange={(e) => {
                                     const nuevoValor = Number(e.target.value);
@@ -263,6 +270,8 @@ export default function MenuProductos({
 
                                     if (!Number.isInteger(nuevoValor) || nuevoValor <= 0) {
                                         setErrorCantidad("La cantidad debe ser mayor que cero.");
+                                    } else if (nuevoValor > 99) {
+                                        setErrorCantidad("La cantidad no puede ser mayor que 99.");
                                     } else {
                                         setErrorCantidad("");
                                     }
@@ -317,7 +326,7 @@ export default function MenuProductos({
                                 className="btn btn-primary modal-add-btn"
                                 onClick={agregarAlPedido}
                                 disabled={
-                                    (!Number.isInteger(Number(cantidad)) || Number(cantidad) <= 0) ||
+                                    (!Number.isInteger(Number(cantidad)) || Number(cantidad) <= 0 || Number(cantidad) > 99) ||
                                     (!!observacion.trim() && !OBSERVACION_REGEX.test(observacion.trim()))
                                 }
                             >
