@@ -22,6 +22,7 @@ from src.repositories.pedido_repository import (
     marcar_pedido_cancelado,
     actualizar_estado_pedido,
 )
+from src.repositories.factura_repository import obtener_factura_por_pedido
 from src.utils.pedido_utils import generar_numero_pedido, calcular_subtotal, calcular_total
 from src.schemas.pedido import PedidoCreate
 
@@ -202,6 +203,62 @@ def eliminar_pedido(db: Session, id_pedido: int):
     db.refresh(pedido)
 
     return construir_respuesta_pedido(pedido)
+
+
+def eliminar_pedido_admin(db: Session, id_pedido: int):
+    if not id_pedido:
+        raise HTTPException(
+            status_code=400,
+            detail="Debe seleccionar un pedido válido para eliminar"
+        )
+
+    pedido = obtener_pedido_por_id(db, id_pedido)
+
+    if not pedido:
+        raise HTTPException(
+            status_code=404,
+            detail="Debe seleccionar un pedido válido para eliminar"
+        )
+
+    factura_existente = obtener_factura_por_pedido(db, pedido.id_pedido)
+
+    if factura_existente or pedido.estado == "FACTURADO":
+        raise HTTPException(
+            status_code=400,
+            detail="No se puede eliminar un pedido facturado."
+        )
+
+    if pedido.estado in ["EN_PREPARACION", "LISTO", "ENTREGADO"]:
+        raise HTTPException(
+            status_code=400,
+            detail="No se puede eliminar un pedido ya servido."
+        )
+
+    if pedido.estado == "CANCELADO":
+        raise HTTPException(
+            status_code=400,
+            detail="El pedido ya se encuentra eliminado."
+        )
+
+    if pedido.estado != "PENDIENTE":
+        raise HTTPException(
+            status_code=400,
+            detail="No se puede eliminar el pedido seleccionado."
+        )
+
+    mesa = obtener_mesa_por_id(db, pedido.id_mesa)
+
+    marcar_pedido_cancelado(db, pedido)
+
+    if mesa:
+        actualizar_mesa_a_libre(db, mesa)
+
+    db.commit()
+    db.refresh(pedido)
+
+    pedido_actualizado = obtener_pedido_por_id(db, pedido.id_pedido)
+
+    return construir_respuesta_pedido(pedido_actualizado)
 
 
 def construir_respuesta_pedido(pedido: Pedido):

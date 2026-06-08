@@ -15,6 +15,7 @@ from src.services.pedido_service import (
     listar_todos_los_pedidos,
     listar_pedidos_para_admin,
     eliminar_pedido,
+    eliminar_pedido_admin,
     listar_pedidos_para_cocina,
     listar_pedidos_para_caja,
     actualizar_estado_pedido_cocina,
@@ -70,6 +71,11 @@ def patch_estado_pedido(
     db: Session = Depends(get_db),
 ):
     return actualizar_estado_pedido_cocina(db, id_pedido, payload.estado)
+
+
+@router.delete("/admin/{id_pedido}", response_model=PedidoResponse)
+def delete_pedido_admin(id_pedido: int, db: Session = Depends(get_db)):
+    return eliminar_pedido_admin(db, id_pedido)
 
 
 @router.delete("/{id_pedido}", response_model=PedidoResponse)

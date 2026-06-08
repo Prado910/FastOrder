@@ -115,6 +115,18 @@ export async function eliminarPedido(idPedido) {
     return handleResponse(response);
 }
 
+export async function eliminarPedidoAdmin(idPedido) {
+    if (!idPedido) {
+        throw new Error("Debe seleccionar un pedido válido para eliminar");
+    }
+
+    const response = await fetch(`${API_BASE_URL}/pedidos/admin/${idPedido}`, {
+        method: "DELETE",
+    });
+
+    return handleResponse(response);
+}
+
 export async function login(payload) {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
@@ -178,5 +190,28 @@ export async function crearFactura(payload) {
 
 export async function getFacturas() {
     const response = await fetch(`${API_BASE_URL}/facturas`);
+    return handleResponse(response);
+}
+
+export async function getReportePedidos({
+    fechaDesde = "",
+    fechaHasta = "",
+    estado = "TODOS",
+} = {}) {
+    const params = new URLSearchParams();
+
+    if (fechaDesde) {
+        params.append("fecha_desde", fechaDesde);
+    }
+
+    if (fechaHasta) {
+        params.append("fecha_hasta", fechaHasta);
+    }
+
+    if (estado && estado !== "TODOS") {
+        params.append("estado", estado);
+    }
+
+    const response = await fetch(`${API_BASE_URL}/reportes/pedidos?${params.toString()}`);
     return handleResponse(response);
 }

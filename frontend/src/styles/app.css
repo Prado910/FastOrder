@@ -3538,7 +3538,132 @@ body {
     color: #a1263d;
 }
 
+
+.admin-report-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.admin-report-message {
+    margin-top: 22px;
+}
+
+.admin-report-panel {
+    margin-top: 28px;
+    border: 1px solid #ead9d9;
+    border-radius: 14px;
+    background: #fffaf9;
+    padding: 22px;
+}
+
+.admin-report-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.admin-report-header h3 {
+    margin: 0;
+    color: #232834;
+    font-size: 21px;
+    font-weight: 800;
+}
+
+.admin-report-header p {
+    margin-top: 6px;
+    color: #6d6d73;
+    font-size: 14px;
+}
+
+.admin-report-state {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: #a1263d;
+    color: #ffffff;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.admin-report-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+.admin-report-metrics article {
+    border: 1px solid #efe1e1;
+    border-radius: 12px;
+    background: #ffffff;
+    padding: 16px;
+}
+
+.admin-report-metrics span {
+    display: block;
+    color: #6d6d73;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.admin-report-metrics strong {
+    color: #232834;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.admin-report-section {
+    margin-top: 22px;
+}
+
+.admin-report-section h4 {
+    margin: 0 0 12px;
+    color: #232834;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.admin-report-table-wrap {
+    overflow-x: auto;
+}
+
+.admin-report-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+    border-radius: 10px;
+    overflow: hidden;
+    color: #232834;
+}
+
+.admin-report-table th,
+.admin-report-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #eee4e4;
+    text-align: left;
+    font-size: 14px;
+}
+
+.admin-report-table th {
+    background: #f7eeee;
+    font-weight: 800;
+}
+
+.admin-report-table td:last-child {
+    font-weight: 800;
+    white-space: nowrap;
+}
+
 @media (max-width: 1100px) {
+    .admin-report-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .admin-page {
         width: min(100% - 40px, 1400px);
     }
@@ -3593,6 +3718,14 @@ body {
     }
 
     .admin-detail-info {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-report-header {
+        flex-direction: column;
+    }
+
+    .admin-report-metrics {
         grid-template-columns: 1fr;
     }
 }

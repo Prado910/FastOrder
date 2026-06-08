@@ -3,8 +3,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import HeaderMesero from "../../components/mesero/HeaderMesero";
 import {
     consultarPedido,
-    eliminarPedido,
+    eliminarPedidoAdmin as eliminarPedidoAdminApi,
     getPedidosAdmin,
+    getReportePedidos,
 } from "../../services/api";
 
 import searchIcon from "../../assets/search.png";
@@ -43,6 +44,19 @@ function formatearFecha(fecha) {
         minute: "2-digit",
         hour12: false,
     });
+}
+
+function formatearFechaReporte(fecha) {
+    if (!fecha) return "--/--/----";
+
+    const partes = String(fecha).split("-");
+
+    if (partes.length !== 3) {
+        return fecha;
+    }
+
+    const [anio, mes, dia] = partes;
+    return `${dia}/${mes}/${anio}`;
 }
 
 function formatearEstado(estado) {
@@ -90,6 +104,9 @@ export default function DashboardAdmin({ usuario, onCerrarSesion }) {
     const [pedidoDetalle, setPedidoDetalle] = useState(null);
     const [detalleLoading, setDetalleLoading] = useState(false);
     const [toast, setToast] = useState("");
+    const [reporte, setReporte] = useState(null);
+    const [reporteLoading, setReporteLoading] = useState(false);
+    const [reporteMensaje, setReporteMensaje] = useState("");
 
     const rangoFechasInvalido = useMemo(() => {
         if (!fechaDesde || !fechaHasta) return false;
@@ -164,7 +181,9 @@ export default function DashboardAdmin({ usuario, onCerrarSesion }) {
 
         try {
             setError("");
-            await eliminarPedido(idPedido);
+
+            await eliminarPedidoAdminApi(idPedido);
+
             setToast("Pedido eliminado correctamente");
             await cargarPedidos();
         } catch (error) {
@@ -176,14 +195,55 @@ export default function DashboardAdmin({ usuario, onCerrarSesion }) {
     function limpiarFechas() {
         setFechaDesde("");
         setFechaHasta("");
+        setReporte(null);
+        setReporteMensaje("");
     }
 
     function cerrarDetalle() {
         setPedidoDetalle(null);
     }
 
-    function manejarReporte() {
-        setToast("La generación de reportes se implementará en la HU9");
+    async function manejarReporte() {
+        if (!fechaDesde || !fechaHasta) {
+            setReporte(null);
+            setReporteMensaje("");
+            setToast("Debe diligenciar los parámetros obligatorios");
+            return;
+        }
+
+        if (rangoFechasInvalido) {
+            setReporte(null);
+            setReporteMensaje("");
+            return;
+        }
+
+        try {
+            setReporteLoading(true);
+            setError("");
+            setReporteMensaje("");
+
+            const data = await getReportePedidos({
+                fechaDesde,
+                fechaHasta,
+                estado,
+            });
+
+            setReporte(data);
+
+            if (data.mensaje) {
+                setReporteMensaje(data.mensaje);
+                setToast(data.mensaje);
+            } else {
+                setToast("Reporte generado correctamente");
+            }
+        } catch (error) {
+            console.error(error);
+            setReporte(null);
+            setReporteMensaje("");
+            setError(error.message || "No se pudo generar el reporte.");
+        } finally {
+            setReporteLoading(false);
+        }
     }
 
     const sinResultados =
@@ -271,9 +331,10 @@ export default function DashboardAdmin({ usuario, onCerrarSesion }) {
                                 type="button"
                                 className="admin-report-button"
                                 onClick={manejarReporte}
+                                disabled={reporteLoading}
                             >
                                 <span className="admin-report-button-icon">▣</span>
-                                <span>Generar Reporte</span>
+                                <span>{reporteLoading ? "Generando..." : "Generar Reporte"}</span>
                             </button>
 
                             <select
@@ -299,6 +360,108 @@ export default function DashboardAdmin({ usuario, onCerrarSesion }) {
 
                     {!rangoFechasInvalido && error && (
                         <p className="error-text admin-error-text">{error}</p>
+                    )}
+
+                    {!rangoFechasInvalido && reporteMensaje && (
+                        <div className="admin-error-box admin-report-message" role="alert">
+                            <span>!</span>
+                            <strong>{reporteMensaje}</strong>
+                        </div>
+                    )}
+
+                    {!rangoFechasInvalido && reporte && (
+                        <section className="admin-report-panel">
+                            <div className="admin-report-header">
+                                <div>
+                                    <h3>Reporte de pedidos</h3>
+                                    <p>
+                                        Período: {formatearFechaReporte(reporte.fecha_desde)} - {formatearFechaReporte(reporte.fecha_hasta)}
+                                    </p>
+                                </div>
+
+                                <span className="admin-report-state">
+                                    {formatearEstado(reporte.estado)}
+                                </span>
+                            </div>
+
+                            <div className="admin-report-metrics">
+                                <article>
+                                    <span>Total pedidos</span>
+                                    <strong>{reporte.total_pedidos}</strong>
+                                </article>
+
+                                <article>
+                                    <span>Productos vendidos</span>
+                                    <strong>{reporte.total_productos}</strong>
+                                </article>
+
+                                <article>
+                                    <span>Ventas del período</span>
+                                    <strong>$ {formatearPrecio(reporte.total_ventas)}</strong>
+                                </article>
+
+                                <article>
+                                    <span>Promedio por pedido</span>
+                                    <strong>$ {formatearPrecio(reporte.promedio_por_pedido)}</strong>
+                                </article>
+                            </div>
+
+                            {reporte.ventas_por_estado?.length > 0 && (
+                                <div className="admin-report-section">
+                                    <h4>Resumen por estado</h4>
+
+                                    <div className="admin-report-table-wrap">
+                                        <table className="admin-report-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Estado</th>
+                                                    <th>Cantidad</th>
+                                                    <th>Total ventas</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+                                                {reporte.ventas_por_estado.map((item) => (
+                                                    <tr key={item.estado}>
+                                                        <td>{formatearEstado(item.estado)}</td>
+                                                        <td>{item.cantidad_pedidos}</td>
+                                                        <td>$ {formatearPrecio(item.total_ventas)}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            {reporte.productos?.length > 0 && (
+                                <div className="admin-report-section">
+                                    <h4>Productos del período</h4>
+
+                                    <div className="admin-report-table-wrap">
+                                        <table className="admin-report-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Producto</th>
+                                                    <th>Cantidad vendida</th>
+                                                    <th>Total ventas</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+                                                {reporte.productos.map((item) => (
+                                                    <tr key={item.id_producto}>
+                                                        <td>{item.nombre_producto}</td>
+                                                        <td>{item.cantidad_vendida}</td>
+                                                        <td>$ {formatearPrecio(item.total_ventas)}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+                        </section>
                     )}
 
                     {!rangoFechasInvalido && loading && (
