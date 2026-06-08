@@ -594,7 +594,7 @@ export default function DashboardCaja({ usuario, onCerrarSesion }) {
                         <section className="cashier-empty-state cashier-empty-search">
                             <div className="cashier-empty-icon">⌕</div>
                             <p>
-                                No se encontraron pedidos con "{busqueda.trim()}"
+                                No se encontraron pedidos asociados al criterio ingresado
                             </p>
                         </section>
                     )}
