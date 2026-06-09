@@ -5,7 +5,6 @@ import {
     consultarPedido,
     eliminarPedidoAdmin as eliminarPedidoAdminApi,
     getPedidosAdmin,
-    getReportePedidos,
 } from "../../services/api";
 
 import searchIcon from "../../assets/search.png";
@@ -93,6 +92,44 @@ function obtenerMesa(pedido) {
     return pedido.numero_mesa || pedido.id_mesa;
 }
 
+function calcularResumenReporte(pedidosReporte = []) {
+    const pedidosFacturados = pedidosReporte.filter(
+        (pedido) => pedido.estado === "FACTURADO"
+    );
+
+    const ingresosTotales = pedidosFacturados.reduce((total, pedido) => {
+        return total + Number(pedido.total || 0);
+    }, 0);
+
+    return {
+        totalPedidos: pedidosReporte.length,
+        pedidosFacturados: pedidosFacturados.length,
+        ingresosTotales,
+    };
+}
+
+function calcularReportePedidos(pedidos = []) {
+    const totalPedidos = pedidos.length;
+
+    const totalProductos = pedidos.reduce((acc, pedido) => {
+        const cantidadPedido = (pedido.items || []).reduce((sum, item) => {
+            return sum + Number(item.cantidad || 0);
+        }, 0);
+
+        return acc + cantidadPedido;
+    }, 0);
+
+    const ventasTotales = pedidos.reduce((acc, pedido) => {
+        return acc + Number(pedido.total || 0);
+    }, 0);
+
+    return {
+        totalPedidos,
+        totalProductos,
+        ventasTotales,
+    };
+}
+
 export default function DashboardAdmin({ usuario, onCerrarSesion }) {
     const [pedidos, setPedidos] = useState([]);
     const [busqueda, setBusqueda] = useState("");
@@ -104,6 +141,7 @@ export default function DashboardAdmin({ usuario, onCerrarSesion }) {
     const [pedidoDetalle, setPedidoDetalle] = useState(null);
     const [detalleLoading, setDetalleLoading] = useState(false);
     const [toast, setToast] = useState("");
+    const [reportePedidos, setReportePedidos] = useState(null);
     const [reporte, setReporte] = useState(null);
     const [reporteLoading, setReporteLoading] = useState(false);
     const [reporteMensaje, setReporteMensaje] = useState("");
@@ -203,46 +241,52 @@ export default function DashboardAdmin({ usuario, onCerrarSesion }) {
         setPedidoDetalle(null);
     }
 
+    function cerrarReporte() {
+        setReportePedidos(null);
+    }
+
     async function manejarReporte() {
         if (!fechaDesde || !fechaHasta) {
-            setReporte(null);
-            setReporteMensaje("");
-            setToast("Debe diligenciar los parámetros obligatorios");
+            setReportePedidos(null);
+            setError("Debe diligenciar los parámetros obligatorios");
             return;
         }
 
         if (rangoFechasInvalido) {
-            setReporte(null);
-            setReporteMensaje("");
+            setReportePedidos(null);
             return;
         }
 
         try {
-            setReporteLoading(true);
+            setLoading(true);
             setError("");
-            setReporteMensaje("");
 
-            const data = await getReportePedidos({
+            const data = await getPedidosAdmin({
+                criterio: busqueda,
+                estado,
                 fechaDesde,
                 fechaHasta,
-                estado,
             });
 
-            setReporte(data);
-
-            if (data.mensaje) {
-                setReporteMensaje(data.mensaje);
-                setToast(data.mensaje);
-            } else {
-                setToast("Reporte generado correctamente");
+            if (data.length === 0) {
+                setPedidos([]);
+                setReportePedidos(null);
+                setError("No hay datos para generar el reporte");
+                return;
             }
+
+            setPedidos(data);
+
+            setReportePedidos({
+                resumen: calcularResumenReporte(data),
+                pedidos: data,
+            });
         } catch (error) {
             console.error(error);
-            setReporte(null);
-            setReporteMensaje("");
+            setReportePedidos(null);
             setError(error.message || "No se pudo generar el reporte.");
         } finally {
-            setReporteLoading(false);
+            setLoading(false);
         }
     }
 
@@ -360,6 +404,34 @@ export default function DashboardAdmin({ usuario, onCerrarSesion }) {
 
                     {!rangoFechasInvalido && error && (
                         <p className="error-text admin-error-text">{error}</p>
+                    )}
+
+                    {reporte && !rangoFechasInvalido && !error && (
+                        <section className="admin-report-summary">
+                            <div>
+                                <h3>Reporte de pedidos</h3>
+                                <p>
+                                    Período: {fechaDesde} hasta {fechaHasta}
+                                </p>
+                            </div>
+
+                            <div className="admin-report-grid">
+                                <article className="admin-report-metric">
+                                    <span>Total pedidos</span>
+                                    <strong>{reporte.totalPedidos}</strong>
+                                </article>
+
+                                <article className="admin-report-metric">
+                                    <span>Productos vendidos</span>
+                                    <strong>{reporte.totalProductos}</strong>
+                                </article>
+
+                                <article className="admin-report-metric">
+                                    <span>Ventas totales</span>
+                                    <strong>$ {formatearPrecio(reporte.ventasTotales)}</strong>
+                                </article>
+                            </div>
+                        </section>
                     )}
 
                     {!rangoFechasInvalido && reporteMensaje && (
@@ -592,6 +664,108 @@ export default function DashboardAdmin({ usuario, onCerrarSesion }) {
                         <div className="admin-detail-total">
                             <span>Total</span>
                             <strong>$ {formatearPrecio(pedidoDetalle.total)}</strong>
+                        </div>
+                    </section>
+                </div>
+            )}
+
+            {reportePedidos && (
+                <div
+                    className="admin-report-backdrop"
+                    role="presentation"
+                    onClick={cerrarReporte}
+                >
+                    <section
+                        className="admin-report-modal"
+                        role="dialog"
+                        aria-modal="true"
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        <div className="admin-report-modal-header">
+                            <div className="admin-report-title-row">
+                                <span className="admin-report-title-icon">▤</span>
+
+                                <div>
+                                    <h2>Reporte de Pedidos</h2>
+                                    <p>Información detallada de los pedidos filtrados</p>
+                                </div>
+                            </div>
+
+                            <button
+                                type="button"
+                                className="admin-report-close"
+                                onClick={cerrarReporte}
+                                aria-label="Cerrar reporte"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        <div className="admin-report-stats">
+                            <article>
+                                <span>Total de Pedidos</span>
+                                <strong>{reportePedidos.resumen.totalPedidos}</strong>
+                            </article>
+
+                            <article>
+                                <span>Pedidos Facturados</span>
+                                <strong className="admin-report-success">
+                                    {reportePedidos.resumen.pedidosFacturados}
+                                </strong>
+                            </article>
+
+                            <article>
+                                <span>Ingresos Totales</span>
+                                <strong className="admin-report-money">
+                                    $ {formatearPrecio(reportePedidos.resumen.ingresosTotales)}
+                                </strong>
+                            </article>
+                        </div>
+
+                        <h3 className="admin-report-section-title">Detalle de Pedidos</h3>
+
+                        <div className="admin-report-list">
+                            {reportePedidos.pedidos.map((pedido) => (
+                                <article
+                                    key={pedido.id_pedido}
+                                    className="admin-report-order-card"
+                                >
+                                    <div className="admin-report-order-header">
+                                        <div>
+                                            <strong>{pedido.numero_pedido}</strong>
+                                            <p>
+                                                Mesa {obtenerMesa(pedido)} ·{" "}
+                                                {pedido.mesero || "Sin mesero"}
+                                            </p>
+                                        </div>
+
+                                        <span className={obtenerClaseEstado(pedido.estado)}>
+                                            {formatearEstado(pedido.estado)}
+                                        </span>
+                                    </div>
+
+                                    <div className="admin-report-products">
+                                        <p>Productos:</p>
+
+                                        <ul>
+                                            {(pedido.items || []).map((item, index) => (
+                                                <li key={`${item.id_producto}-${index}`}>
+                                                    {item.cantidad}x {item.nombre_producto} - $ {" "}
+                                                    {formatearPrecio(item.precio_unitario)}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+
+                                    <div className="admin-report-order-footer">
+                                        <span>
+                                            {formatearFecha(pedido.fecha_hora_creacion)}
+                                        </span>
+
+                                        <strong>$ {formatearPrecio(pedido.total)}</strong>
+                                    </div>
+                                </article>
+                            ))}
                         </div>
                     </section>
                 </div>
