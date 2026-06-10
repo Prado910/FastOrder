@@ -3948,3 +3948,37 @@ body {
     color: #9f1d35;
     font-size: 16px;
 }
+
+.note-counter {
+    margin: 4px 0 0;
+    color: #6b7280;
+    font-size: 13px;
+    text-align: right;
+}
+
+.item-row>div {
+    min-width: 0;
+}
+
+.item-row {
+    overflow: hidden;
+}
+
+.item-row>div:first-child {
+    min-width: 0;
+    max-width: 100%;
+    flex: 1;
+}
+
+.item-note {
+    display: block;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.35;
+}
+
+.price-strong {
+    flex-shrink: 0;
+}

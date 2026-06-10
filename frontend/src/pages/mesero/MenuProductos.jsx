@@ -6,6 +6,8 @@ import shoppingCartWhiteIcon from "../../assets/shopping-cart-white.png";
 
 const CATEGORIAS = ["ENTRADAS", "HAMBURGUESAS", "BEBIDAS", "ALTERNOS"];
 const OBSERVACION_REGEX = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s.,;:()\-]*$/;
+const MAX_LONGITUD_NOTA = 250;
+const MENSAJE_NOTA_LARGA = "La nota es demasiado larga.";
 
 function formatearCategoria(nombre) {
     if (!nombre) return "";
@@ -16,6 +18,20 @@ function obtenerCategoriaProducto(producto) {
     return String(producto.categoria || producto.nombre_categoria || "")
         .trim()
         .toUpperCase();
+}
+
+function validarNotaProducto(valor) {
+    const nota = valor.trim();
+
+    if (nota.length > MAX_LONGITUD_NOTA) {
+        return MENSAJE_NOTA_LARGA;
+    }
+
+    if (nota && !OBSERVACION_REGEX.test(nota)) {
+        return "La nota contiene caracteres no permitidos. Usa solo letras, números y signos básicos.";
+    }
+
+    return "";
 }
 
 export default function MenuProductos({
@@ -117,7 +133,18 @@ export default function MenuProductos({
     function agregarAlPedido() {
         if (!productoSeleccionado) return;
 
+        const notaLimpia = observacion.trim();
+        const errorNota = validarNotaProducto(observacion);
+
+        if (errorNota) {
+            setErrorObservacion(errorNota);
+            return;
+        }
+
+        setErrorObservacion("");
+
         const cantidadValida = Number(cantidad);
+
         if (!Number.isInteger(cantidadValida) || cantidadValida <= 0) {
             setErrorCantidad("No puedes agregar un producto con cantidad cero o menor.");
             return;
@@ -129,13 +156,6 @@ export default function MenuProductos({
         }
 
         setErrorCantidad("");
-
-        const notaLimpia = observacion.trim();
-        if (notaLimpia && !OBSERVACION_REGEX.test(notaLimpia)) {
-            setErrorObservacion("La nota contiene caracteres no permitidos. Usa solo letras, números y signos básicos.");
-            return;
-        }
-        setErrorObservacion("");
 
         const subtotal = Number(productoSeleccionado.precio) * cantidadValida;
 
@@ -292,18 +312,14 @@ export default function MenuProductos({
                                 onChange={(e) => {
                                     const nuevoValor = e.target.value;
                                     setObservacion(nuevoValor);
-
-                                    if (nuevoValor.trim() && !OBSERVACION_REGEX.test(nuevoValor.trim())) {
-                                        setErrorObservacion(
-                                            "La nota contiene caracteres no permitidos. Usa solo letras, números y signos básicos."
-                                        );
-                                    } else {
-                                        setErrorObservacion("");
-                                    }
+                                    setErrorObservacion(validarNotaProducto(nuevoValor));
                                 }}
                                 rows="4"
                                 className="textarea"
                             />
+                            <p className="note-counter">
+                                {observacion.length}/{MAX_LONGITUD_NOTA}
+                            </p>
                         </label>
 
                         {errorObservacion && (
@@ -326,8 +342,8 @@ export default function MenuProductos({
                                 className="btn btn-primary modal-add-btn"
                                 onClick={agregarAlPedido}
                                 disabled={
-                                    (!Number.isInteger(Number(cantidad)) || Number(cantidad) <= 0 || Number(cantidad) > 99) ||
-                                    (!!observacion.trim() && !OBSERVACION_REGEX.test(observacion.trim()))
+                                    (!Number.isInteger(Number(cantidad)) || Number(cantidad) <= 0) ||
+                                    !!validarNotaProducto(observacion)
                                 }
                             >
                                 Agregar al pedido

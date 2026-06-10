@@ -171,9 +171,10 @@ export default function ResumenPedido({
                                     </p>
 
                                     {item.observacion_item && (
-                                        <p className="resumen-item-note">
-                                            Notas: {item.observacion_item}
-                                        </p>
+                                        <div className="item-note">
+                                            <span>Notas: </span>
+                                            <span>{item.observacion_item}</span>
+                                        </div>
                                     )}
 
                                     <p className="resumen-item-subtotal">
