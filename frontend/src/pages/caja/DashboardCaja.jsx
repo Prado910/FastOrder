@@ -97,6 +97,36 @@ function formatearEstado(estado) {
         .replace(/^\w/, (letra) => letra.toUpperCase());
 }
 
+const MAX_TOTAL_FACTURA = 99999999.99;
+const MENSAJE_PROPINA_INVALIDA = "Valor invalido para agregar a la propina";
+const MENSAJE_PROPINA_GRANDE = "La propina es demasiado grande";
+
+function validarPropina(valorTexto, pedido) {
+    const texto = String(valorTexto ?? "").trim();
+
+    if (texto === "") {
+        return "";
+    }
+
+    if (!/^\d+(\.\d{1,2})?$/.test(texto)) {
+        return MENSAJE_PROPINA_INVALIDA;
+    }
+
+    const valor = Number(texto);
+
+    if (!Number.isFinite(valor) || valor < 0) {
+        return MENSAJE_PROPINA_INVALIDA;
+    }
+
+    const subtotal = Number(pedido?.total || 0);
+
+    if (subtotal + valor > MAX_TOTAL_FACTURA) {
+        return MENSAJE_PROPINA_GRANDE;
+    }
+
+    return "";
+}
+
 export default function DashboardCaja({ usuario, onCerrarSesion }) {
     const [pedidosCaja, setPedidosCaja] = useState([]);
     const [facturas, setFacturas] = useState([]);
@@ -171,10 +201,10 @@ export default function DashboardCaja({ usuario, onCerrarSesion }) {
     }
 
     function guardarPropina() {
-        const valor = Number(montoPropina || 0);
+        const mensajeError = validarPropina(montoPropina, pedidoPropina);
 
-        if (!Number.isFinite(valor) || valor < 0) {
-            setPopupPropinaInvalida("Valor invalido para agregar a la propina");
+        if (mensajeError) {
+            setPopupPropinaInvalida(mensajeError);
 
             setTimeout(() => {
                 setPopupPropinaInvalida("");
@@ -182,6 +212,8 @@ export default function DashboardCaja({ usuario, onCerrarSesion }) {
 
             return;
         }
+
+        const valor = Number(montoPropina || 0);
 
         setPropinasPorPedido((propinasActuales) => ({
             ...propinasActuales,
@@ -193,6 +225,13 @@ export default function DashboardCaja({ usuario, onCerrarSesion }) {
     }
 
     async function facturarPedido(pedido) {
+        const propinaPedido = obtenerPropinaPedido(pedido);
+
+        if (Number(pedido.total || 0) + propinaPedido > MAX_TOTAL_FACTURA) {
+            setError(MENSAJE_PROPINA_GRANDE);
+            return;
+        }
+
         try {
             setLoadingFactura(true);
             setError("");
@@ -200,7 +239,7 @@ export default function DashboardCaja({ usuario, onCerrarSesion }) {
             const factura = await crearFactura({
                 id_pedido: pedido.id_pedido,
                 id_usuario_cajero: usuario.id_usuario,
-                propina: obtenerPropinaPedido(pedido),
+                propina: propinaPedido,
             });
 
             setFacturaGenerada(factura);
@@ -708,11 +747,13 @@ export default function DashboardCaja({ usuario, onCerrarSesion }) {
                             <input
                                 type="number"
                                 min="0"
+                                max={MAX_TOTAL_FACTURA}
                                 step="100"
                                 value={montoPropina}
                                 onChange={(event) => {
-                                    setMontoPropina(event.target.value);
-                                    setPopupPropinaInvalida("");
+                                    const nuevoValor = event.target.value;
+                                    setMontoPropina(nuevoValor);
+                                    setPopupPropinaInvalida(validarPropina(nuevoValor, pedidoPropina));
                                 }}
                                 placeholder="2000"
                             />
@@ -721,6 +762,12 @@ export default function DashboardCaja({ usuario, onCerrarSesion }) {
                         <p className="cashier-tip-helper">
                             Ingresa el valor en pesos colombianos
                         </p>
+
+                        {popupPropinaInvalida && (
+                            <p className="cashier-tip-error">
+                                {popupPropinaInvalida}
+                            </p>
+                        )}
 
                         <section className="cashier-tip-detail">
                             <p>Detalle del pedido:</p>
@@ -751,6 +798,7 @@ export default function DashboardCaja({ usuario, onCerrarSesion }) {
                                 type="button"
                                 className="btn btn-primary"
                                 onClick={guardarPropina}
+                                disabled={!!validarPropina(montoPropina, pedidoPropina)}
                             >
                                 Agregar Propina
                             </button>

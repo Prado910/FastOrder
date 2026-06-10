@@ -3982,3 +3982,10 @@ body {
 .price-strong {
     flex-shrink: 0;
 }
+
+.cashier-tip-error {
+    margin: 6px 0 0;
+    color: #a51d2d;
+    font-size: 14px;
+    font-weight: 600;
+}
