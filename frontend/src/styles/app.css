@@ -4036,3 +4036,20 @@ body {
     font-size: 14px;
     font-weight: 600;
 }
+
+.resumen-warning-box {
+    margin: 18px 0;
+    padding: 16px;
+    border-radius: 12px;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+}
+
+.resumen-warning-box .error-text {
+    margin: 0 0 12px;
+    color: #9a3412;
+}
+
+.resumen-change-table-btn {
+    width: fit-content;
+}

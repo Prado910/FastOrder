@@ -15,11 +15,13 @@ export default function ResumenPedido({
     itemsPedido,
     setItemsPedido,
     onVolverAlMenu,
+    onEditarMesa,
     onPedidoConfirmado,
     onCerrarSesion,
 }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [mesaNoDisponible, setMesaNoDisponible] = useState(false);
 
     const totalPedido = useMemo(() => {
         return itemsPedido.reduce((acc, item) => acc + Number(item.subtotal), 0);
@@ -57,7 +59,17 @@ export default function ResumenPedido({
             const pedidoCreado = await crearPedido(payload);
             onPedidoConfirmado(pedidoCreado);
         } catch (err) {
-            setError(err?.message || "No se pudo confirmar el pedido.");
+            const mensaje = err?.message || "No se pudo confirmar el pedido.";
+
+            if (mensaje.toLowerCase().includes("mesa no está libre")) {
+                setMesaNoDisponible(true);
+                setError(
+                    "La mesa seleccionada ya fue ocupada por otro pedido. Elige una mesa diferente para continuar."
+                );
+                return;
+            }
+
+            setError(mensaje);
         } finally {
             setLoading(false);
         }
@@ -152,7 +164,23 @@ export default function ResumenPedido({
                         </div>
                     </div>
 
-                    {error && <p className="error-text">{error}</p>}
+                    {error && (
+                        <div className={mesaNoDisponible ? "resumen-warning-box" : ""}>
+                            <p className="error-text">
+                                {error}
+                            </p>
+
+                            {mesaNoDisponible && (
+                                <button
+                                    type="button"
+                                    className="btn btn-primary resumen-change-table-btn"
+                                    onClick={onEditarMesa}
+                                >
+                                    Elegir otra mesa
+                                </button>
+                            )}
+                        </div>
+                    )}
 
                     <div className="resumen-items">
                         {itemsPedido.map((item, index) => (
@@ -226,9 +254,9 @@ export default function ResumenPedido({
                             type="button"
                             className="btn btn-primary resumen-confirm-btn"
                             onClick={confirmarPedido}
-                            disabled={loading}
+                            disabled={loading || mesaNoDisponible}
                         >
-                            {loading ? "Confirmando..." : "Confirmar Pedido"}
+                            {loading ? "Confirmando." : "Confirmar Pedido"}
                         </button>
                     </div>
                 </section>
