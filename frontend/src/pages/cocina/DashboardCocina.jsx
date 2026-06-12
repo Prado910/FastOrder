@@ -43,11 +43,30 @@ function contarProductos(items = []) {
     return items.reduce((total, item) => total + Number(item.cantidad || 0), 0);
 }
 
-function obtenerPrimerProducto(items = []) {
-    if (!items.length) return "Sin productos";
+function obtenerVistaPreviaProductos(items = []) {
+    if (!items.length) {
+        return [];
+    }
 
-    const primero = items[0];
-    return `${primero.cantidad}x ${primero.nombre_producto}`;
+    return items.map((item, index) => ({
+        key: `${item.id_producto}-${item.nombre_producto}-${index}`,
+        texto: `${item.cantidad}x ${item.nombre_producto}`,
+        nota: obtenerNotaCorta(item.observacion_item),
+    }));
+}
+
+function obtenerNotaCorta(nota) {
+    const texto = String(nota || "").trim();
+
+    if (!texto) {
+        return "";
+    }
+
+    if (texto.length <= 45) {
+        return texto;
+    }
+
+    return `${texto.slice(0, 45).trim()}...`;
 }
 
 const LIMITE_NOTA_COCINA = 120;
@@ -541,9 +560,20 @@ export default function DashboardCocina({ usuario, onCerrarSesion }) {
 
                                 <h2>Mesa {obtenerMesa(pedido)}</h2>
 
-                                <p className="kitchen-order-product">
-                                    {obtenerPrimerProducto(pedido.items)}
-                                </p>
+                                <div className="kitchen-order-products-preview">
+                                    {obtenerVistaPreviaProductos(pedido.items).map((producto) => (
+                                        <div
+                                            key={producto.key}
+                                            className="kitchen-order-product-preview-row"
+                                        >
+                                            <span>{producto.texto}</span>
+
+                                            {producto.nota && (
+                                                <small>Nota: {producto.nota}</small>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
 
                                 <div className="kitchen-order-footer">
                                     <span>◷ {formatearHora(pedido.fecha_hora_creacion)}</span>

@@ -1680,10 +1680,41 @@ body {
     font-size: 24px;
 }
 
-.kitchen-order-product {
-    margin: 0 0 26px;
+.kitchen-order-products-preview {
+    display: grid;
+    gap: 8px;
+    max-height: 138px;
+    margin: 0 0 22px;
+    padding: 12px 14px;
+    overflow-y: auto;
+    border-radius: 10px;
+    background: #f8f4f1;
+}
+
+.kitchen-order-product-preview-row {
+    display: grid;
+    gap: 3px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eadfdd;
+}
+
+.kitchen-order-product-preview-row:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.kitchen-order-product-preview-row span {
     color: #161b22;
-    font-size: 17px;
+    font-size: 16px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.kitchen-order-product-preview-row small {
+    color: #667085;
+    font-size: 13px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
 }
 
 .kitchen-order-footer {
