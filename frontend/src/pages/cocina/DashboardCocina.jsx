@@ -50,6 +50,26 @@ function obtenerPrimerProducto(items = []) {
     return `${primero.cantidad}x ${primero.nombre_producto}`;
 }
 
+const LIMITE_NOTA_COCINA = 120;
+
+function normalizarNota(nota) {
+    return String(nota || "").trim();
+}
+
+function debeTruncarNota(nota) {
+    return normalizarNota(nota).length > LIMITE_NOTA_COCINA;
+}
+
+function obtenerNotaVisible(nota, expandida) {
+    const texto = normalizarNota(nota);
+
+    if (!debeTruncarNota(texto) || expandida) {
+        return texto;
+    }
+
+    return `${texto.slice(0, LIMITE_NOTA_COCINA).trim()}...`;
+}
+
 function obtenerClaseEstado(estado) {
     if (estado === "PENDIENTE") return "kitchen-status kitchen-status-pending";
     if (estado === "EN_PREPARACION") return "kitchen-status kitchen-status-preparing";
@@ -65,6 +85,7 @@ export default function DashboardCocina({ usuario, onCerrarSesion }) {
     const [error, setError] = useState("");
     const [mensaje, setMensaje] = useState("");
     const [toastCambioEstado, setToastCambioEstado] = useState(null);
+    const [notasExpandidas, setNotasExpandidas] = useState({});
 
 
     const cargarPedidos = useCallback(async () => {
@@ -131,11 +152,13 @@ export default function DashboardCocina({ usuario, onCerrarSesion }) {
 
     function seleccionarPedido(pedido) {
         setPedidoSeleccionado(pedido);
+        setNotasExpandidas({});
         setMensaje("");
     }
 
     function volverAlPanel() {
         setPedidoSeleccionado(null);
+        setNotasExpandidas({});
         setMensaje("");
         setError("");
     }
@@ -178,6 +201,13 @@ export default function DashboardCocina({ usuario, onCerrarSesion }) {
         }
 
         return "Estado del pedido actualizado";
+    }
+
+    function alternarNotaProducto(notaKey) {
+        setNotasExpandidas((notasActuales) => ({
+            ...notasActuales,
+            [notaKey]: !notasActuales[notaKey],
+        }));
     }
 
     async function cambiarEstadoPedido(pedidoBase = pedidoSeleccionado) {
@@ -314,28 +344,51 @@ export default function DashboardCocina({ usuario, onCerrarSesion }) {
                         <h2 className="kitchen-products-title">Productos</h2>
 
                         <div className="kitchen-products-list">
-                            {pedidoSeleccionado.items.map((item) => (
-                                <article
-                                    key={`${item.id_producto}-${item.nombre_producto}`}
-                                    className="kitchen-product-row"
-                                >
-                                    <div>
-                                        <strong>
-                                            {item.cantidad}x {item.nombre_producto}
-                                        </strong>
+                            {pedidoSeleccionado.items.map((item, index) => {
+                                const notaKey = `${pedidoSeleccionado.id_pedido}-${item.id_producto}-${index}`;
+                                const notaExpandida = !!notasExpandidas[notaKey];
 
-                                        {item.observacion_item && (
-                                            <p className="kitchen-product-note">
-                                                Nota: {item.observacion_item}
-                                            </p>
-                                        )}
-                                    </div>
+                                return (
+                                    <article
+                                        key={notaKey}
+                                        className="kitchen-product-row"
+                                    >
+                                        <div className="kitchen-product-main">
+                                            <strong className="kitchen-product-name">
+                                                {item.cantidad}x {item.nombre_producto}
+                                            </strong>
 
-                                    <span>
-                                        $ {formatearPrecio(item.subtotal)}
-                                    </span>
-                                </article>
-                            ))}
+                                            {item.observacion_item && (
+                                                <div className="kitchen-product-note-wrap">
+                                                    <p className="kitchen-product-note">
+                                                        <span className="kitchen-product-note-label">
+                                                            Nota:
+                                                        </span>{" "}
+                                                        {obtenerNotaVisible(
+                                                            item.observacion_item,
+                                                            notaExpandida
+                                                        )}
+                                                    </p>
+
+                                                    {debeTruncarNota(item.observacion_item) && (
+                                                        <button
+                                                            type="button"
+                                                            className="kitchen-note-toggle"
+                                                            onClick={() => alternarNotaProducto(notaKey)}
+                                                        >
+                                                            {notaExpandida ? "Ver menos" : "Ver más"}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <span className="kitchen-product-price">
+                                            $ {formatearPrecio(item.subtotal)}
+                                        </span>
+                                    </article>
+                                );
+                            })}
                         </div>
 
                         {puedeActualizar && (

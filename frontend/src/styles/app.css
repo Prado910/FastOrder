@@ -1807,31 +1807,68 @@ body {
 }
 
 .kitchen-product-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: flex-start;
-    justify-content: space-between;
     gap: 24px;
     padding: 24px 22px;
     background: #f0ece8;
     border-radius: 10px;
+    overflow: hidden;
 }
 
-.kitchen-product-row strong {
+.kitchen-product-main {
+    min-width: 0;
+}
+
+.kitchen-product-name {
+    display: block;
     color: #111827;
     font-size: 22px;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
-.kitchen-product-row span {
+.kitchen-product-price {
     color: #3a1f10;
     font-size: 20px;
     font-weight: 700;
     white-space: nowrap;
+    justify-self: end;
+}
+
+.kitchen-product-note-wrap {
+    max-width: 100%;
+    margin-top: 10px;
 }
 
 .kitchen-product-note {
-    margin: 10px 0 0;
+    margin: 0;
     color: #66646a;
     font-size: 16px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.kitchen-product-note-label {
+    color: #4b5563;
+    font-weight: 700;
+}
+
+.kitchen-note-toggle {
+    margin-top: 6px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #7c2d12;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.kitchen-note-toggle:hover {
+    text-decoration: underline;
 }
 
 .kitchen-message {
@@ -1842,6 +1879,16 @@ body {
     color: #9a3412;
     font-size: 15px;
     font-weight: 700;
+}
+
+@media (max-width: 640px) {
+    .kitchen-product-row {
+        grid-template-columns: 1fr;
+    }
+
+    .kitchen-product-price {
+        justify-self: start;
+    }
 }
 
 @media (max-width: 900px) {
