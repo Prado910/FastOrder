@@ -702,21 +702,21 @@ export default function DashboardAdmin({ usuario, onCerrarSesion }) {
                         </div>
 
                         <div className="admin-report-stats">
-                            <article>
+                            <article className="admin-report-stat-card">
                                 <span>Total de Pedidos</span>
                                 <strong>{reportePedidos.resumen.totalPedidos}</strong>
                             </article>
 
-                            <article>
+                            <article className="admin-report-stat-card">
                                 <span>Pedidos Facturados</span>
                                 <strong className="admin-report-success">
                                     {reportePedidos.resumen.pedidosFacturados}
                                 </strong>
                             </article>
 
-                            <article>
+                            <article className="admin-report-stat-card admin-report-stat-money-card">
                                 <span>Ingresos Totales</span>
-                                <strong className="admin-report-money">
+                                <strong className="admin-report-money admin-report-money-value">
                                     $ {formatearPrecio(reportePedidos.resumen.ingresosTotales)}
                                 </strong>
                             </article>

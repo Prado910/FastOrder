@@ -3839,7 +3839,7 @@ body {
 }
 
 .admin-report-modal {
-    width: 510px;
+    width: min(680px, calc(100vw - 40px));
     max-width: 100%;
     max-height: 86vh;
     overflow-y: auto;
@@ -3892,12 +3892,19 @@ body {
 
 .admin-report-stats {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
     margin-bottom: 26px;
     padding: 18px 16px;
     border-radius: 8px;
     background: #f1ebe6;
+}
+
+.admin-report-stat-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 6px;
 }
 
 .admin-report-stats article {
@@ -3907,13 +3914,25 @@ body {
 }
 
 .admin-report-stats span {
-    font-size: 14px;
     color: #6b5f62;
+    font-size: 13px;
+    line-height: 1.2;
+    white-space: nowrap;
 }
 
 .admin-report-stats strong {
-    font-size: 26px;
     color: #111827;
+    font-size: clamp(20px, 3vw, 26px);
+    line-height: 1.15;
+}
+
+.admin-report-money-value {
+    display: block;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow-wrap: normal;
+    word-break: normal;
+    font-variant-numeric: tabular-nums;
 }
 
 .admin-report-success {
@@ -4057,4 +4076,20 @@ body {
 
 .resumen-change-table-btn {
     width: fit-content;
+}
+
+@media (max-width: 640px) {
+    .admin-report-modal {
+        width: calc(100vw - 24px);
+        padding: 18px;
+    }
+
+    .admin-report-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-report-stats span,
+    .admin-report-money-value {
+        white-space: normal;
+    }
 }
