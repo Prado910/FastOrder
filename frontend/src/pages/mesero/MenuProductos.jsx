@@ -34,6 +34,42 @@ function validarNotaProducto(valor) {
     return "";
 }
 
+function normalizarCantidad(valor) {
+    return String(valor ?? "").trim().replace(/\s+/g, "");
+}
+
+function validarCantidadProducto(valor) {
+    const texto = normalizarCantidad(valor);
+
+    if (!texto) {
+        return "Debes ingresar una cantidad.";
+    }
+
+    if (texto.includes(",") || texto.includes(".")) {
+        return "La cantidad debe ser entera.";
+    }
+
+    if (!/^\d+$/.test(texto)) {
+        return "La cantidad debe contener solo números enteros.";
+    }
+
+    const numero = Number(texto);
+
+    if (numero <= 0) {
+        return "La cantidad debe ser mayor que cero.";
+    }
+
+    if (numero > 99) {
+        return "La cantidad no puede ser mayor que 99.";
+    }
+
+    return "";
+}
+
+function convertirCantidad(valor) {
+    return Number(normalizarCantidad(valor));
+}
+
 export default function MenuProductos({
     usuario,
     mesaSeleccionada,
@@ -50,7 +86,7 @@ export default function MenuProductos({
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [productoSeleccionado, setProductoSeleccionado] = useState(null);
-    const [cantidad, setCantidad] = useState(1);
+    const [cantidad, setCantidad] = useState("1");
     const [observacion, setObservacion] = useState("");
     const [categoriaActiva, setCategoriaActiva] = useState("ENTRADAS");
     const [errorCantidad, setErrorCantidad] = useState("");
@@ -116,7 +152,7 @@ export default function MenuProductos({
         if (producto.disponible !== "S") return;
 
         setProductoSeleccionado(producto);
-        setCantidad(1);
+        setCantidad("1");
         setObservacion("");
         setErrorCantidad("");
         setErrorObservacion("");
@@ -124,7 +160,7 @@ export default function MenuProductos({
 
     function cerrarPersonalizacion() {
         setProductoSeleccionado(null);
-        setCantidad(1);
+        setCantidad("1");
         setObservacion("");
         setErrorCantidad("");
         setErrorObservacion("");
@@ -143,17 +179,14 @@ export default function MenuProductos({
 
         setErrorObservacion("");
 
-        const cantidadValida = Number(cantidad);
+        const errorCantidadActual = validarCantidadProducto(cantidad);
 
-        if (!Number.isInteger(cantidadValida) || cantidadValida <= 0) {
-            setErrorCantidad("No puedes agregar un producto con cantidad cero o menor.");
+        if (errorCantidadActual) {
+            setErrorCantidad(errorCantidadActual);
             return;
         }
 
-        if (cantidad > 99) {
-            setErrorCantidad("La cantidad del producto es inválida");
-            return;
-        }
+        const cantidadValida = convertirCantidad(cantidad);
 
         setErrorCantidad("");
 
@@ -280,21 +313,14 @@ export default function MenuProductos({
                         <label className="field-label">
                             Cantidad
                             <input
-                                type="number"
-                                min="1"
-                                max="99"
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
                                 value={cantidad}
                                 onChange={(e) => {
-                                    const nuevoValor = Number(e.target.value);
+                                    const nuevoValor = e.target.value;
                                     setCantidad(nuevoValor);
-
-                                    if (!Number.isInteger(nuevoValor) || nuevoValor <= 0) {
-                                        setErrorCantidad("La cantidad debe ser mayor que cero.");
-                                    } else if (nuevoValor > 99) {
-                                        setErrorCantidad("La cantidad no puede ser mayor que 99.");
-                                    } else {
-                                        setErrorCantidad("");
-                                    }
+                                    setErrorCantidad(validarCantidadProducto(nuevoValor));
                                 }}
                                 className="input"
                             />
@@ -342,7 +368,7 @@ export default function MenuProductos({
                                 className="btn btn-primary modal-add-btn"
                                 onClick={agregarAlPedido}
                                 disabled={
-                                    (!Number.isInteger(Number(cantidad)) || Number(cantidad) <= 0) ||
+                                    Boolean(validarCantidadProducto(cantidad)) ||
                                     !!validarNotaProducto(observacion)
                                 }
                             >
