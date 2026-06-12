@@ -103,7 +103,25 @@ export default function SeguimientoPedido({
             }
         } catch (error) {
             console.error(error);
-            setError(error.message || "No se pudo eliminar el pedido.");
+
+            const mensaje = error.message || "No se pudo eliminar el pedido.";
+            setError(mensaje);
+
+            const pedidoYaCancelado =
+                mensaje.toLowerCase().includes("ya fue eliminado") ||
+                mensaje.toLowerCase().includes("ya fue cancelado");
+
+            if (pedidoYaCancelado) {
+                setMostrarModal(false);
+
+                if (onPedidoEliminado) {
+                    onPedidoEliminado(
+                        "El pedido ya fue eliminado en otra sesión. Se actualizó el listado."
+                    );
+                } else {
+                    onVolver();
+                }
+            }
         } finally {
             setEliminando(false);
         }

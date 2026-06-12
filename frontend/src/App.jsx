@@ -24,6 +24,9 @@ export default function App() {
   const [pedidoEnSeguimiento, setPedidoEnSeguimiento] = useState(null);
   const [mostrarToastMesa, setMostrarToastMesa] = useState(false);
   const [mostrarToastPedidoEliminado, setMostrarToastPedidoEliminado] = useState(false);
+  const [mensajeToastPedidoEliminado, setMensajeToastPedidoEliminado] = useState(
+    "Pedido eliminado correctamente"
+  );
 
   function manejarLogin(usuarioAutenticado) {
     sessionStorage.setItem("usuario", JSON.stringify(usuarioAutenticado));
@@ -89,8 +92,11 @@ export default function App() {
     setPaso("seguimiento");
   }
 
-  function manejarPedidoEliminado() {
+  function manejarPedidoEliminado(
+    mensaje = "Pedido eliminado correctamente"
+  ) {
     setPedidoEnSeguimiento(null);
+    setMensajeToastPedidoEliminado(mensaje);
     setMostrarToastPedidoEliminado(true);
     setPaso("dashboard");
   }
@@ -134,6 +140,7 @@ export default function App() {
         onCerrarSesion={cerrarSesion}
         onVerPedido={irASeguimientoPedido}
         mostrarToastPedidoEliminado={mostrarToastPedidoEliminado}
+        mensajeToastPedidoEliminado={mensajeToastPedidoEliminado}
         onOcultarToastPedidoEliminado={() => setMostrarToastPedidoEliminado(false)}
       />
     );

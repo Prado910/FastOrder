@@ -79,6 +79,7 @@ export default function DashboardMesero({
     onCerrarSesion,
     onVerPedido,
     mostrarToastPedidoEliminado,
+    mensajeToastPedidoEliminado,
     onOcultarToastPedidoEliminado,
 }) {
     const [pedidos, setPedidos] = useState([]);
@@ -156,7 +157,9 @@ export default function DashboardMesero({
             {mostrarToastPedidoEliminado && (
                 <div className="pedido-eliminado-toast" role="status" aria-live="polite">
                     <span className="pedido-eliminado-toast-icon">✓</span>
-                    <span>Pedido eliminado correctamente</span>
+                    <span>
+                        {mensajeToastPedidoEliminado || "Pedido eliminado correctamente"}
+                    </span>
                 </div>
             )}
 

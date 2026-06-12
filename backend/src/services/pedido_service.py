@@ -184,13 +184,35 @@ def eliminar_pedido(db: Session, id_pedido: int):
             detail="Debe seleccionar un pedido válido para eliminar"
         )
 
+    if pedido.estado == "CANCELADO":
+        raise HTTPException(
+            status_code=400,
+            detail="El pedido ya fue eliminado o cancelado. Actualiza el listado para ver los pedidos activos."
+        )
+
+    if pedido.estado == "EN_PREPARACION":
+        raise HTTPException(
+            status_code=400,
+            detail="No se puede eliminar un pedido en preparación"
+        )
+
+    if pedido.estado == "LISTO":
+        raise HTTPException(
+            status_code=400,
+            detail="No se puede eliminar un pedido listo."
+        )
+
+    if pedido.estado in ["ENTREGADO", "FACTURADO"]:
+        raise HTTPException(
+            status_code=400,
+            detail="No se puede eliminar un pedido ya servido o facturado."
+        )
+
     if pedido.estado != "PENDIENTE":
-        mensaje = "Solo se pueden eliminar pedidos pendientes."
-
-        if pedido.estado == "EN_PREPARACION":
-            mensaje = "No se puede eliminar un pedido en preparación"
-
-        raise HTTPException(status_code=400, detail=mensaje)
+        raise HTTPException(
+            status_code=400,
+            detail="No se puede eliminar el pedido seleccionado."
+        )
 
     mesa = obtener_mesa_por_id(db, pedido.id_mesa)
 
