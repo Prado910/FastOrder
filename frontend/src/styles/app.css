@@ -1875,10 +1875,15 @@ body {
     margin: 0 0 18px;
     padding: 12px 14px;
     border-radius: 8px;
-    background: #fff7ed;
-    color: #9a3412;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
     font-size: 15px;
     font-weight: 700;
+}
+
+.kitchen-message-detail {
+    margin: 18px 0;
 }
 
 @media (max-width: 640px) {

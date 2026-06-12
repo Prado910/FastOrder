@@ -257,7 +257,33 @@ export default function DashboardCocina({ usuario, onCerrarSesion }) {
             });
         } catch (error) {
             console.error(error);
-            setMensaje(error.message || "No se pudo actualizar el estado del pedido.");
+
+            const mensajeError =
+                error.message || "No se pudo actualizar el estado del pedido.";
+
+            const esVistaDesactualizada =
+                mensajeError.toLowerCase().includes("otra sesión") ||
+                mensajeError.toLowerCase().includes("actualiza el listado") ||
+                mensajeError.toLowerCase().includes("ya se encuentra en estado");
+
+            if (esVistaDesactualizada) {
+                await cargarPedidos();
+
+                setEstadoActivo(nuevoEstado);
+
+                setMensaje(
+                    "El pedido ya fue actualizado desde otra sesión. Se refrescó el listado y ahora puedes ver el estado actual."
+                );
+
+                setToastCambioEstado({
+                    id: Date.now(),
+                    mensaje: "Pedido actualizado desde otra sesión",
+                });
+
+                return;
+            }
+
+            setMensaje(mensajeError);
         } finally {
             setActualizando(false);
         }
@@ -340,6 +366,12 @@ export default function DashboardCocina({ usuario, onCerrarSesion }) {
                                 <strong>◷ {formatearHora(pedidoSeleccionado.fecha_hora_creacion)}</strong>
                             </div>
                         </div>
+
+                        {mensaje && (
+                            <p className="kitchen-message kitchen-message-detail">
+                                {mensaje}
+                            </p>
+                        )}
 
                         <h2 className="kitchen-products-title">Productos</h2>
 

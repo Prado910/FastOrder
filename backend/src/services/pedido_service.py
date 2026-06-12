@@ -344,12 +344,42 @@ def actualizar_estado_pedido_cocina(db: Session, id_pedido: int, nuevo_estado: s
         "EN_PREPARACION": ["LISTO"],
     }
 
+    nombres_estado = {
+        "PENDIENTE": "Pendiente",
+        "EN_PREPARACION": "En preparación",
+        "LISTO": "Listo",
+        "CANCELADO": "Cancelado",
+        "FACTURADO": "Facturado",
+    }
+
+    if pedido.estado == nuevo_estado:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"El pedido ya se encuentra en estado "
+                f"{nombres_estado.get(pedido.estado, pedido.estado)}. "
+                "Actualiza el listado para ver el estado actual."
+            )
+        )
+
+    if pedido.estado == "LISTO":
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "El pedido ya fue marcado como Listo desde otra sesión. "
+                "Se debe actualizar el listado para ver el estado actual."
+            )
+        )
+
     estados_posibles = transiciones_permitidas.get(pedido.estado, [])
 
     if nuevo_estado not in estados_posibles:
         raise HTTPException(
             status_code=400,
-            detail="Cambio de estado no permitido."
+            detail=(
+                "No es posible realizar este cambio porque el pedido cambió de estado. "
+                "Actualiza el listado para continuar."
+            )
         )
 
     actualizar_estado_pedido(db, pedido, nuevo_estado)
