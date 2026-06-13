@@ -16,10 +16,13 @@ from src.repositories.pedido_repository import (
     actualizar_mesa_a_libre,
     obtener_pedido_por_id,
     listar_pedidos,
+    listar_pedidos_admin,
     listar_pedidos_cocina,
+    listar_pedidos_caja,
     marcar_pedido_cancelado,
     actualizar_estado_pedido,
 )
+from src.repositories.factura_repository import obtener_factura_por_pedido
 from src.utils.pedido_utils import generar_numero_pedido, calcular_subtotal, calcular_total
 from src.schemas.pedido import PedidoCreate
 
@@ -137,6 +140,35 @@ def listar_todos_los_pedidos(db: Session, criterio: str | None = None):
     return [construir_respuesta_pedido(pedido) for pedido in pedidos]
 
 
+def listar_pedidos_para_admin(
+    db: Session,
+    criterio: str | None = None,
+    estado: str | None = None,
+    fecha_desde=None,
+    fecha_hasta=None,
+):
+    if fecha_desde and fecha_hasta and fecha_desde > fecha_hasta:
+        raise HTTPException(
+            status_code=400,
+            detail="El rango de fechas no es válido"
+        )
+
+    estado_normalizado = None
+
+    if estado and estado != "TODOS":
+        estado_normalizado = estado
+
+    pedidos = listar_pedidos_admin(
+        db=db,
+        criterio=criterio,
+        estado=estado_normalizado,
+        fecha_desde=fecha_desde,
+        fecha_hasta=fecha_hasta,
+    )
+
+    return [construir_respuesta_pedido(pedido) for pedido in pedidos]
+
+
 def eliminar_pedido(db: Session, id_pedido: int):
     if not id_pedido:
         raise HTTPException(
@@ -152,13 +184,35 @@ def eliminar_pedido(db: Session, id_pedido: int):
             detail="Debe seleccionar un pedido válido para eliminar"
         )
 
+    if pedido.estado == "CANCELADO":
+        raise HTTPException(
+            status_code=400,
+            detail="El pedido ya fue eliminado o cancelado. Actualiza el listado para ver los pedidos activos."
+        )
+
+    if pedido.estado == "EN_PREPARACION":
+        raise HTTPException(
+            status_code=400,
+            detail="No se puede eliminar un pedido en preparación"
+        )
+
+    if pedido.estado == "LISTO":
+        raise HTTPException(
+            status_code=400,
+            detail="No se puede eliminar un pedido listo."
+        )
+
+    if pedido.estado in ["ENTREGADO", "FACTURADO"]:
+        raise HTTPException(
+            status_code=400,
+            detail="No se puede eliminar un pedido ya servido o facturado."
+        )
+
     if pedido.estado != "PENDIENTE":
-        mensaje = "Solo se pueden eliminar pedidos pendientes."
-
-        if pedido.estado == "EN_PREPARACION":
-            mensaje = "No se puede eliminar un pedido en preparación"
-
-        raise HTTPException(status_code=400, detail=mensaje)
+        raise HTTPException(
+            status_code=400,
+            detail="No se puede eliminar el pedido seleccionado."
+        )
 
     mesa = obtener_mesa_por_id(db, pedido.id_mesa)
 
@@ -171,6 +225,62 @@ def eliminar_pedido(db: Session, id_pedido: int):
     db.refresh(pedido)
 
     return construir_respuesta_pedido(pedido)
+
+
+def eliminar_pedido_admin(db: Session, id_pedido: int):
+    if not id_pedido:
+        raise HTTPException(
+            status_code=400,
+            detail="Debe seleccionar un pedido válido para eliminar"
+        )
+
+    pedido = obtener_pedido_por_id(db, id_pedido)
+
+    if not pedido:
+        raise HTTPException(
+            status_code=404,
+            detail="Debe seleccionar un pedido válido para eliminar"
+        )
+
+    factura_existente = obtener_factura_por_pedido(db, pedido.id_pedido)
+
+    if factura_existente or pedido.estado == "FACTURADO":
+        raise HTTPException(
+            status_code=400,
+            detail="No se puede eliminar un pedido facturado."
+        )
+
+    if pedido.estado in ["EN_PREPARACION", "LISTO", "ENTREGADO"]:
+        raise HTTPException(
+            status_code=400,
+            detail="No se puede eliminar un pedido ya servido."
+        )
+
+    if pedido.estado == "CANCELADO":
+        raise HTTPException(
+            status_code=400,
+            detail="El pedido ya se encuentra eliminado."
+        )
+
+    if pedido.estado != "PENDIENTE":
+        raise HTTPException(
+            status_code=400,
+            detail="No se puede eliminar el pedido seleccionado."
+        )
+
+    mesa = obtener_mesa_por_id(db, pedido.id_mesa)
+
+    marcar_pedido_cancelado(db, pedido)
+
+    if mesa:
+        actualizar_mesa_a_libre(db, mesa)
+
+    db.commit()
+    db.refresh(pedido)
+
+    pedido_actualizado = obtener_pedido_por_id(db, pedido.id_pedido)
+
+    return construir_respuesta_pedido(pedido_actualizado)
 
 
 def construir_respuesta_pedido(pedido: Pedido):
@@ -234,12 +344,42 @@ def actualizar_estado_pedido_cocina(db: Session, id_pedido: int, nuevo_estado: s
         "EN_PREPARACION": ["LISTO"],
     }
 
+    nombres_estado = {
+        "PENDIENTE": "Pendiente",
+        "EN_PREPARACION": "En preparación",
+        "LISTO": "Listo",
+        "CANCELADO": "Cancelado",
+        "FACTURADO": "Facturado",
+    }
+
+    if pedido.estado == nuevo_estado:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"El pedido ya se encuentra en estado "
+                f"{nombres_estado.get(pedido.estado, pedido.estado)}. "
+                "Actualiza el listado para ver el estado actual."
+            )
+        )
+
+    if pedido.estado == "LISTO":
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "El pedido ya fue marcado como Listo desde otra sesión. "
+                "Se debe actualizar el listado para ver el estado actual."
+            )
+        )
+
     estados_posibles = transiciones_permitidas.get(pedido.estado, [])
 
     if nuevo_estado not in estados_posibles:
         raise HTTPException(
             status_code=400,
-            detail="Cambio de estado no permitido."
+            detail=(
+                "No es posible realizar este cambio porque el pedido cambió de estado. "
+                "Actualiza el listado para continuar."
+            )
         )
 
     actualizar_estado_pedido(db, pedido, nuevo_estado)
@@ -249,3 +389,7 @@ def actualizar_estado_pedido_cocina(db: Session, id_pedido: int, nuevo_estado: s
     pedido_actualizado = obtener_pedido_por_id(db, id_pedido)
 
     return construir_respuesta_pedido(pedido_actualizado)
+
+def listar_pedidos_para_caja(db: Session, criterio: str | None = None):
+    pedidos = listar_pedidos_caja(db, criterio)
+    return [construir_respuesta_pedido(pedido) for pedido in pedidos]

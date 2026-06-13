@@ -43,11 +43,50 @@ function contarProductos(items = []) {
     return items.reduce((total, item) => total + Number(item.cantidad || 0), 0);
 }
 
-function obtenerPrimerProducto(items = []) {
-    if (!items.length) return "Sin productos";
+function obtenerVistaPreviaProductos(items = []) {
+    if (!items.length) {
+        return [];
+    }
 
-    const primero = items[0];
-    return `${primero.cantidad}x ${primero.nombre_producto}`;
+    return items.map((item, index) => ({
+        key: `${item.id_producto}-${item.nombre_producto}-${index}`,
+        texto: `${item.cantidad}x ${item.nombre_producto}`,
+        nota: obtenerNotaCorta(item.observacion_item),
+    }));
+}
+
+function obtenerNotaCorta(nota) {
+    const texto = String(nota || "").trim();
+
+    if (!texto) {
+        return "";
+    }
+
+    if (texto.length <= 45) {
+        return texto;
+    }
+
+    return `${texto.slice(0, 45).trim()}...`;
+}
+
+const LIMITE_NOTA_COCINA = 120;
+
+function normalizarNota(nota) {
+    return String(nota || "").trim();
+}
+
+function debeTruncarNota(nota) {
+    return normalizarNota(nota).length > LIMITE_NOTA_COCINA;
+}
+
+function obtenerNotaVisible(nota, expandida) {
+    const texto = normalizarNota(nota);
+
+    if (!debeTruncarNota(texto) || expandida) {
+        return texto;
+    }
+
+    return `${texto.slice(0, LIMITE_NOTA_COCINA).trim()}...`;
 }
 
 function obtenerClaseEstado(estado) {
@@ -64,6 +103,9 @@ export default function DashboardCocina({ usuario, onCerrarSesion }) {
     const [actualizando, setActualizando] = useState(false);
     const [error, setError] = useState("");
     const [mensaje, setMensaje] = useState("");
+    const [toastCambioEstado, setToastCambioEstado] = useState(null);
+    const [notasExpandidas, setNotasExpandidas] = useState({});
+
 
     const cargarPedidos = useCallback(async () => {
         try {
@@ -102,6 +144,16 @@ export default function DashboardCocina({ usuario, onCerrarSesion }) {
         return () => clearInterval(intervalo);
     }, [cargarPedidos]);
 
+    useEffect(() => {
+        if (!toastCambioEstado) return;
+
+        const timer = setTimeout(() => {
+            setToastCambioEstado(null);
+        }, 2500);
+
+        return () => clearTimeout(timer);
+    }, [toastCambioEstado]);
+
     const pedidosPorEstado = useMemo(() => {
         return {
             PENDIENTE: pedidos.filter((pedido) => pedido.estado === "PENDIENTE"),
@@ -119,52 +171,15 @@ export default function DashboardCocina({ usuario, onCerrarSesion }) {
 
     function seleccionarPedido(pedido) {
         setPedidoSeleccionado(pedido);
+        setNotasExpandidas({});
         setMensaje("");
     }
 
     function volverAlPanel() {
         setPedidoSeleccionado(null);
+        setNotasExpandidas({});
         setMensaje("");
         setError("");
-    }
-
-    async function cambiarEstadoPedido() {
-        if (!pedidoSeleccionado) {
-            setMensaje("Debe seleccionar un pedido para consultar el detalle");
-            return;
-        }
-
-        const nuevoEstado =
-            pedidoSeleccionado.estado === "PENDIENTE"
-                ? "EN_PREPARACION"
-                : "LISTO";
-
-        try {
-            setActualizando(true);
-            setMensaje("");
-
-            const pedidoActualizado = await actualizarEstadoPedido(
-                pedidoSeleccionado.id_pedido,
-                nuevoEstado
-            );
-
-            setPedidos((pedidosActuales) =>
-                pedidosActuales.map((pedido) =>
-                    pedido.id_pedido === pedidoActualizado.id_pedido
-                        ? pedidoActualizado
-                        : pedido
-                )
-            );
-
-            setPedidoSeleccionado(pedidoActualizado);
-            setEstadoActivo(pedidoActualizado.estado);
-            setMensaje("Estado del pedido actualizado correctamente.");
-        } catch (error) {
-            console.error(error);
-            setMensaje(error.message || "No se pudo actualizar el estado del pedido.");
-        } finally {
-            setActualizando(false);
-        }
     }
 
     function obtenerSiguienteEstadoPedido(pedido) {
@@ -193,6 +208,25 @@ export default function DashboardCocina({ usuario, onCerrarSesion }) {
         }
 
         return "";
+    }
+
+    function obtenerMensajeCambioEstado(nuevoEstado) {
+        if (nuevoEstado === "EN_PREPARACION") {
+            return "Pedido marcado como En Preparación";
+        }
+
+        if (nuevoEstado === "LISTO") {
+            return "Pedido marcado como Listo";
+        }
+
+        return "Estado del pedido actualizado";
+    }
+
+    function alternarNotaProducto(notaKey) {
+        setNotasExpandidas((notasActuales) => ({
+            ...notasActuales,
+            [notaKey]: !notasActuales[notaKey],
+        }));
     }
 
     async function cambiarEstadoPedido(pedidoBase = pedidoSeleccionado) {
@@ -235,10 +269,40 @@ export default function DashboardCocina({ usuario, onCerrarSesion }) {
             });
 
             setEstadoActivo(pedidoActualizado.estado);
-            setMensaje("Estado del pedido actualizado correctamente.");
+
+            setToastCambioEstado({
+                id: Date.now(),
+                mensaje: obtenerMensajeCambioEstado(nuevoEstado),
+            });
         } catch (error) {
             console.error(error);
-            setMensaje(error.message || "No se pudo actualizar el estado del pedido.");
+
+            const mensajeError =
+                error.message || "No se pudo actualizar el estado del pedido.";
+
+            const esVistaDesactualizada =
+                mensajeError.toLowerCase().includes("otra sesión") ||
+                mensajeError.toLowerCase().includes("actualiza el listado") ||
+                mensajeError.toLowerCase().includes("ya se encuentra en estado");
+
+            if (esVistaDesactualizada) {
+                await cargarPedidos();
+
+                setEstadoActivo(nuevoEstado);
+
+                setMensaje(
+                    "El pedido ya fue actualizado desde otra sesión. Se refrescó el listado y ahora puedes ver el estado actual."
+                );
+
+                setToastCambioEstado({
+                    id: Date.now(),
+                    mensaje: "Pedido actualizado desde otra sesión",
+                });
+
+                return;
+            }
+
+            setMensaje(mensajeError);
         } finally {
             setActualizando(false);
         }
@@ -274,6 +338,13 @@ export default function DashboardCocina({ usuario, onCerrarSesion }) {
                     usuario={usuario}
                     onCerrarSesion={onCerrarSesion}
                 />
+
+                {toastCambioEstado && (
+                    <div className="cocina-estado-toast" role="status" aria-live="polite">
+                        <span className="cocina-estado-toast-icon">✓</span>
+                        <span>{toastCambioEstado.mensaje}</span>
+                    </div>
+                )}
 
                 <main className="kitchen-page kitchen-detail-page">
                     <button
@@ -315,38 +386,61 @@ export default function DashboardCocina({ usuario, onCerrarSesion }) {
                             </div>
                         </div>
 
-                        <h2 className="kitchen-products-title">Productos</h2>
-
-                        <div className="kitchen-products-list">
-                            {pedidoSeleccionado.items.map((item) => (
-                                <article
-                                    key={`${item.id_producto}-${item.nombre_producto}`}
-                                    className="kitchen-product-row"
-                                >
-                                    <div>
-                                        <strong>
-                                            {item.cantidad}x {item.nombre_producto}
-                                        </strong>
-
-                                        {item.observacion_item && (
-                                            <p className="kitchen-product-note">
-                                                Nota: {item.observacion_item}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    <span>
-                                        $ {formatearPrecio(item.subtotal)}
-                                    </span>
-                                </article>
-                            ))}
-                        </div>
-
                         {mensaje && (
-                            <p className="kitchen-message">
+                            <p className="kitchen-message kitchen-message-detail">
                                 {mensaje}
                             </p>
                         )}
+
+                        <h2 className="kitchen-products-title">Productos</h2>
+
+                        <div className="kitchen-products-list">
+                            {pedidoSeleccionado.items.map((item, index) => {
+                                const notaKey = `${pedidoSeleccionado.id_pedido}-${item.id_producto}-${index}`;
+                                const notaExpandida = !!notasExpandidas[notaKey];
+
+                                return (
+                                    <article
+                                        key={notaKey}
+                                        className="kitchen-product-row"
+                                    >
+                                        <div className="kitchen-product-main">
+                                            <strong className="kitchen-product-name">
+                                                {item.cantidad}x {item.nombre_producto}
+                                            </strong>
+
+                                            {item.observacion_item && (
+                                                <div className="kitchen-product-note-wrap">
+                                                    <p className="kitchen-product-note">
+                                                        <span className="kitchen-product-note-label">
+                                                            Nota:
+                                                        </span>{" "}
+                                                        {obtenerNotaVisible(
+                                                            item.observacion_item,
+                                                            notaExpandida
+                                                        )}
+                                                    </p>
+
+                                                    {debeTruncarNota(item.observacion_item) && (
+                                                        <button
+                                                            type="button"
+                                                            className="kitchen-note-toggle"
+                                                            onClick={() => alternarNotaProducto(notaKey)}
+                                                        >
+                                                            {notaExpandida ? "Ver menos" : "Ver más"}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <span className="kitchen-product-price">
+                                            $ {formatearPrecio(item.subtotal)}
+                                        </span>
+                                    </article>
+                                );
+                            })}
+                        </div>
 
                         {puedeActualizar && (
                             <button
@@ -369,6 +463,13 @@ export default function DashboardCocina({ usuario, onCerrarSesion }) {
     return (
         <div className="dashboard-shell">
             <HeaderMesero usuario={usuario} onCerrarSesion={onCerrarSesion} />
+
+            {toastCambioEstado && (
+                <div className="cocina-estado-toast" role="status" aria-live="polite">
+                    <span className="cocina-estado-toast-icon">✓</span>
+                    <span>{toastCambioEstado.mensaje}</span>
+                </div>
+            )}
 
             <main className="kitchen-page">
                 <section className="kitchen-title-block">
@@ -459,9 +560,20 @@ export default function DashboardCocina({ usuario, onCerrarSesion }) {
 
                                 <h2>Mesa {obtenerMesa(pedido)}</h2>
 
-                                <p className="kitchen-order-product">
-                                    {obtenerPrimerProducto(pedido.items)}
-                                </p>
+                                <div className="kitchen-order-products-preview">
+                                    {obtenerVistaPreviaProductos(pedido.items).map((producto) => (
+                                        <div
+                                            key={producto.key}
+                                            className="kitchen-order-product-preview-row"
+                                        >
+                                            <span>{producto.texto}</span>
+
+                                            {producto.nota && (
+                                                <small>Nota: {producto.nota}</small>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
 
                                 <div className="kitchen-order-footer">
                                     <span>◷ {formatearHora(pedido.fecha_hora_creacion)}</span>

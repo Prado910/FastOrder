@@ -14,6 +14,7 @@ export default function SeleccionarMesa({
     const [mesas, setMesas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [mesaOcupadaToast, setMesaOcupadaToast] = useState(null);
 
     useEffect(() => {
         // Carga las mesas al montar el componente
@@ -33,9 +34,33 @@ export default function SeleccionarMesa({
         cargarMesas();
     }, []);
 
+    useEffect(() => {
+        if (!mesaOcupadaToast) return;
+
+        const timer = setTimeout(() => {
+            setMesaOcupadaToast(null);
+        }, 2500);
+
+        return () => clearTimeout(timer);
+    }, [mesaOcupadaToast]);
+
+    function mostrarPopupMesaOcupada(mesa) {
+        setMesaOcupadaToast({
+            id: Date.now(),
+            numero_mesa: mesa.numero_mesa,
+        });
+    }
+
     return (
         <div className="dashboard-shell">
             <HeaderMesero usuario={usuario} onCerrarSesion={onCerrarSesion} />
+
+            {mesaOcupadaToast && (
+                <div className="mesa-ocupada-toast" role="alert" aria-live="assertive">
+                    <span className="mesa-ocupada-toast-icon">!</span>
+                    <span>Ocupada</span>
+                </div>
+            )}
 
             <main className="page-container dashboard-page">
                 <header className="mesas-page-header">
@@ -77,6 +102,7 @@ export default function SeleccionarMesa({
                                 key={mesa.id_mesa}
                                 mesa={mesa}
                                 onSeleccionar={onMesaSeleccionada}
+                                onMesaOcupada={mostrarPopupMesaOcupada}
                             />
                         ))}
                     </section>

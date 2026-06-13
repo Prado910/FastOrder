@@ -4,19 +4,21 @@ const API_BASE_URL = "/api";
 async function handleResponse(response) {
     if (!response.ok) {
         let message = "Ocurrió un error en la petición";
+
         try {
             const errorData = await response.json();
             message = errorData.detail || message;
         } catch {
             // Si la respuesta no viene en JSON, se deja el mensaje por defecto
         }
+
         throw new Error(message);
     }
 
     return response.json();
 }
 
-// Obtiene todas las mesas (sin filtrar por estado)
+// Obtiene todas las mesas
 export async function getMesas() {
     const response = await fetch(`${API_BASE_URL}/mesas`);
     return handleResponse(response);
@@ -28,7 +30,7 @@ export async function getMesasDisponibles() {
     return handleResponse(response);
 }
 
-// Obtiene las mesas disponibles para asignar un pedido
+// Obtiene los productos visibles en el menú
 export async function getProductos() {
     const response = await fetch(`${API_BASE_URL}/productos`);
     return handleResponse(response);
@@ -54,7 +56,45 @@ export async function getPedidos({ criterio = "" } = {}) {
         params.append("criterio", criterio.trim());
     }
 
-    const response = await fetch(`${API_BASE_URL}/pedidos?${params.toString()}`);
+    const queryString = params.toString();
+    const url = queryString
+        ? `${API_BASE_URL}/pedidos?${queryString}`
+        : `${API_BASE_URL}/pedidos`;
+
+    const response = await fetch(url);
+    return handleResponse(response);
+}
+
+export async function getPedidosAdmin({
+    criterio = "",
+    estado = "TODOS",
+    fechaDesde = "",
+    fechaHasta = "",
+} = {}) {
+    const params = new URLSearchParams();
+
+    if (criterio.trim()) {
+        params.append("criterio", criterio.trim());
+    }
+
+    if (estado && estado !== "TODOS") {
+        params.append("estado", estado);
+    }
+
+    if (fechaDesde) {
+        params.append("fecha_desde", fechaDesde);
+    }
+
+    if (fechaHasta) {
+        params.append("fecha_hasta", fechaHasta);
+    }
+
+    const queryString = params.toString();
+    const url = queryString
+        ? `${API_BASE_URL}/pedidos/admin?${queryString}`
+        : `${API_BASE_URL}/pedidos/admin`;
+
+    const response = await fetch(url);
     return handleResponse(response);
 }
 
@@ -69,6 +109,18 @@ export async function eliminarPedido(idPedido) {
     }
 
     const response = await fetch(`${API_BASE_URL}/pedidos/${idPedido}`, {
+        method: "DELETE",
+    });
+
+    return handleResponse(response);
+}
+
+export async function eliminarPedidoAdmin(idPedido) {
+    if (!idPedido) {
+        throw new Error("Debe seleccionar un pedido válido para eliminar");
+    }
+
+    const response = await fetch(`${API_BASE_URL}/pedidos/admin/${idPedido}`, {
         method: "DELETE",
     });
 
@@ -105,5 +157,61 @@ export async function actualizarEstadoPedido(idPedido, estado) {
         body: JSON.stringify({ estado }),
     });
 
+    return handleResponse(response);
+}
+
+export async function getPedidosCaja({ criterio = "" } = {}) {
+    const params = new URLSearchParams();
+
+    if (criterio.trim()) {
+        params.append("criterio", criterio.trim());
+    }
+
+    const queryString = params.toString();
+    const url = queryString
+        ? `${API_BASE_URL}/pedidos/caja?${queryString}`
+        : `${API_BASE_URL}/pedidos/caja`;
+
+    const response = await fetch(url);
+    return handleResponse(response);
+}
+
+export async function crearFactura(payload) {
+    const response = await fetch(`${API_BASE_URL}/facturas`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+    });
+
+    return handleResponse(response);
+}
+
+export async function getFacturas() {
+    const response = await fetch(`${API_BASE_URL}/facturas`);
+    return handleResponse(response);
+}
+
+export async function getReportePedidos({
+    fechaDesde = "",
+    fechaHasta = "",
+    estado = "TODOS",
+} = {}) {
+    const params = new URLSearchParams();
+
+    if (fechaDesde) {
+        params.append("fecha_desde", fechaDesde);
+    }
+
+    if (fechaHasta) {
+        params.append("fecha_hasta", fechaHasta);
+    }
+
+    if (estado && estado !== "TODOS") {
+        params.append("estado", estado);
+    }
+
+    const response = await fetch(`${API_BASE_URL}/reportes/pedidos?${params.toString()}`);
     return handleResponse(response);
 }

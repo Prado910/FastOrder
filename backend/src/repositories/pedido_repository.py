@@ -1,9 +1,12 @@
+from datetime import date, time, datetime
+
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, func
 
 from src.models.pedido import Pedido
 from src.models.detalle_pedido import DetallePedido
 from src.models.mesa import Mesa
+from src.models.usuario import Usuario
 
 
 def opciones_pedido():
@@ -71,7 +74,8 @@ def listar_pedidos(db: Session, criterio: str | None = None):
         texto_mesa = texto.lower().replace("mesa", "").strip()
 
         condiciones = [
-            Pedido.numero_pedido.ilike(f"%{texto}%")
+            Pedido.numero_pedido.ilike(f"%{texto}%"),
+            Pedido.estado.ilike(f"%{texto}%"),
         ]
 
         if texto.isdigit() or texto_mesa.isdigit():
@@ -86,6 +90,60 @@ def listar_pedidos(db: Session, criterio: str | None = None):
     return db.execute(stmt).unique().scalars().all()
 
 
+def listar_pedidos_admin(
+    db: Session,
+    criterio: str | None = None,
+    estado: str | None = None,
+    fecha_desde: date | None = None,
+    fecha_hasta: date | None = None,
+):
+    stmt = (
+        select(Pedido)
+        .join(Mesa, Pedido.id_mesa == Mesa.id_mesa)
+        .join(Usuario, Pedido.id_usuario_mesero == Usuario.id_usuario)
+        .options(*opciones_pedido())
+        .order_by(Pedido.fecha_hora_creacion.desc())
+    )
+
+    texto = (criterio or "").strip()
+
+    if texto:
+        texto_mesa = texto.lower().replace("mesa", "").strip()
+
+        nombre_mesero = func.lower(
+            Usuario.nombre + " " + Usuario.apellido
+        )
+
+        condiciones = [
+            Pedido.numero_pedido.ilike(f"%{texto}%"),
+            Pedido.estado.ilike(f"%{texto}%"),
+            nombre_mesero.ilike(f"%{texto.lower()}%"),
+        ]
+
+        if texto.isdigit() or texto_mesa.isdigit():
+            numero = int(texto_mesa if texto_mesa.isdigit() else texto)
+            condiciones.extend([
+                Pedido.id_pedido == numero,
+                Pedido.id_mesa == numero,
+                Mesa.numero_mesa == numero,
+            ])
+
+        stmt = stmt.where(or_(*condiciones))
+
+    if estado:
+        stmt = stmt.where(Pedido.estado == estado)
+
+    if fecha_desde:
+        inicio_dia = datetime.combine(fecha_desde, time.min)
+        stmt = stmt.where(Pedido.fecha_hora_creacion >= inicio_dia)
+
+    if fecha_hasta:
+        fin_dia = datetime.combine(fecha_hasta, time.max)
+        stmt = stmt.where(Pedido.fecha_hora_creacion <= fin_dia)
+
+    return db.execute(stmt).unique().scalars().all()
+
+
 def listar_pedidos_cocina(db: Session):
     stmt = (
         select(Pedido)
@@ -93,5 +151,35 @@ def listar_pedidos_cocina(db: Session):
         .where(Pedido.estado.in_(["PENDIENTE", "EN_PREPARACION", "LISTO"]))
         .order_by(Pedido.fecha_hora_creacion.asc())
     )
+
+    return db.execute(stmt).unique().scalars().all()
+
+
+def listar_pedidos_caja(db: Session, criterio: str | None = None):
+    stmt = (
+        select(Pedido)
+        .options(*opciones_pedido())
+        .where(Pedido.estado == "LISTO")
+        .order_by(Pedido.fecha_hora_creacion.desc())
+    )
+
+    texto = (criterio or "").strip()
+
+    if texto:
+        texto_mesa = texto.lower().replace("mesa", "").strip()
+
+        condiciones = [
+            Pedido.numero_pedido.ilike(f"%{texto}%"),
+            Pedido.estado.ilike(f"%{texto}%"),
+        ]
+
+        if texto.isdigit() or texto_mesa.isdigit():
+            numero = int(texto_mesa if texto_mesa.isdigit() else texto)
+            condiciones.extend([
+                Pedido.id_pedido == numero,
+                Pedido.id_mesa == numero,
+            ])
+
+        stmt = stmt.where(or_(*condiciones))
 
     return db.execute(stmt).unique().scalars().all()

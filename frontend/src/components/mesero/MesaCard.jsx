@@ -1,14 +1,24 @@
 import groupIcon from "../../assets/group.png";
 
-export default function MesaCard({ mesa, onSeleccionar }) {
+export default function MesaCard({ mesa, onSeleccionar, onMesaOcupada }) {
     const ocupada = mesa.estado !== "LIBRE";
+
+    function manejarClick() {
+        if (ocupada) {
+            onMesaOcupada?.(mesa);
+            return;
+        }
+
+        onSeleccionar(mesa);
+    }
 
     return (
         <button
             type="button"
             className={`mesa-card ${ocupada ? "mesa-card-disabled" : ""}`}
-            onClick={() => !ocupada && onSeleccionar(mesa)}
-            disabled={ocupada}
+            onClick={manejarClick}
+            aria-disabled={ocupada}
+            title={ocupada ? "Mesa ocupada" : "Seleccionar mesa"}
         >
             <div className={`mesa-number-circle ${ocupada ? "mesa-number-circle-disabled" : ""}`}>
                 {mesa.numero_mesa}

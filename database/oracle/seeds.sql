@@ -29,23 +29,27 @@ INSERT INTO USUARIO (ID_ROL, NOMBRE, APELLIDO, USERNAME, CORREO, CLAVE)
 VALUES (1, 'Carlos', 'Mendez', 'mesero1', 'mesero1@lunaroja.com', 'password');
 INSERT INTO USUARIO (ID_ROL, NOMBRE, APELLIDO, USERNAME, CORREO, CLAVE)
 VALUES (2, 'Ana', 'Torres', 'cocina1', 'cocina1@lunaroja.com', 'password');
+INSERT INTO USUARIO (ID_ROL, NOMBRE, APELLIDO, USERNAME, CORREO, CLAVE)
+VALUES (3, 'Ana', 'López', 'caja1', 'caja1@lunaroja.com', 'password');
+INSERT INTO USUARIO (ID_ROL, NOMBRE, APELLIDO, USERNAME, CORREO, CLAVE)
+VALUES (4, 'Pedro', 'Gomez', 'admin1', 'admin1@lunaroja.com', 'password');
 
 -- =========================
 -- PRODUCTOS
 -- =========================
 INSERT INTO PRODUCTO (ID_CATEGORIA, NOMBRE, DESCRIPCION, PRECIO, DISPONIBLE)
-VALUES (1, 'Bruschetta', 'Entrada italiana con tomate y albahaca', 9.00, 'S');
+VALUES (1, 'Bruschetta', 'Entrada italiana con tomate y albahaca', 9000, 'S');
 
 INSERT INTO PRODUCTO (ID_CATEGORIA, NOMBRE, DESCRIPCION, PRECIO, DISPONIBLE)
-VALUES (1, 'Ensalada César', 'Lechuga, crutones y aderezo César', 12.50, 'S');
+VALUES (1, 'Ensalada César', 'Lechuga, crutones y aderezo César', 12500, 'S');
 
 INSERT INTO PRODUCTO (ID_CATEGORIA, NOMBRE, DESCRIPCION, PRECIO, DISPONIBLE)
-VALUES (3, 'Agua Mineral', 'Bebida sin gas 600 ml', 3.00, 'N');
+VALUES (3, 'Agua Mineral', 'Bebida sin gas 600 ml', 3000, 'N');
 
 INSERT INTO PRODUCTO (ID_CATEGORIA, NOMBRE, DESCRIPCION, PRECIO, DISPONIBLE)
-VALUES (3, 'Limonada', 'Limonada natural', 4.50, 'S');
+VALUES (3, 'Limonada', 'Limonada natural', 4500, 'S');
 
 INSERT INTO PRODUCTO (ID_CATEGORIA, NOMBRE, DESCRIPCION, PRECIO, DISPONIBLE)
-VALUES (3, 'Café Espresso', 'Café espresso sencillo', 3.50, 'S');
+VALUES (3, 'Café Espresso', 'Café espresso sencillo', 3500, 'S');
 
 COMMIT;

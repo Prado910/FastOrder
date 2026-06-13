@@ -26,6 +26,25 @@ function formatearEstado(estado) {
         .replace(/^\w/, (letra) => letra.toUpperCase());
 }
 
+function obtenerClaseEstado(estado) {
+    switch (estado) {
+        case "PENDIENTE":
+            return "status-pill status-pill-pendiente";
+        case "EN_PREPARACION":
+            return "status-pill status-pill-preparacion";
+        case "LISTO":
+            return "status-pill status-pill-listo";
+        case "ENTREGADO":
+            return "status-pill status-pill-entregado";
+        case "FACTURADO":
+            return "status-pill status-pill-facturado";
+        case "CANCELADO":
+            return "status-pill status-pill-cancelado";
+        default:
+            return "status-pill";
+    }
+}
+
 function contarProductos(items = []) {
     return items.reduce((acc, item) => acc + Number(item.cantidad || 0), 0);
 }
@@ -84,7 +103,25 @@ export default function SeguimientoPedido({
             }
         } catch (error) {
             console.error(error);
-            setError(error.message || "No se pudo eliminar el pedido.");
+
+            const mensaje = error.message || "No se pudo eliminar el pedido.";
+            setError(mensaje);
+
+            const pedidoYaCancelado =
+                mensaje.toLowerCase().includes("ya fue eliminado") ||
+                mensaje.toLowerCase().includes("ya fue cancelado");
+
+            if (pedidoYaCancelado) {
+                setMostrarModal(false);
+
+                if (onPedidoEliminado) {
+                    onPedidoEliminado(
+                        "El pedido ya fue eliminado en otra sesión. Se actualizó el listado."
+                    );
+                } else {
+                    onVolver();
+                }
+            }
         } finally {
             setEliminando(false);
         }
@@ -102,12 +139,10 @@ export default function SeguimientoPedido({
                 <section className="card seguimiento-card">
                     <div className="seguimiento-header">
                         <h2 className="section-title">Seguimiento del Pedido</h2>
-                        <span className="status-pill">
+                        <span className={obtenerClaseEstado(pedido.estado)}>
                             {formatearEstado(pedido.estado)}
                         </span>
                     </div>
-
-                    <p className="pedido-encontrado-msg">Pedido encontrado</p>
 
                     <div className="pedido-detail-summary">
                         <div>

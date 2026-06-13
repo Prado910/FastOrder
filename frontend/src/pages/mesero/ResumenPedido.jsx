@@ -15,13 +15,14 @@ export default function ResumenPedido({
     itemsPedido,
     setItemsPedido,
     onVolverAlMenu,
+    onEditarMesa,
     onPedidoConfirmado,
     onCerrarSesion,
 }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [mesaNoDisponible, setMesaNoDisponible] = useState(false);
 
-    // Calcula el total actual del pedido a partir de los subtotales de cada ítem
     const totalPedido = useMemo(() => {
         return itemsPedido.reduce((acc, item) => acc + Number(item.subtotal), 0);
     }, [itemsPedido]);
@@ -31,9 +32,8 @@ export default function ResumenPedido({
     }
 
     async function confirmarPedido() {
-        // No se permite confirmar un pedido vacío
         if (itemsPedido.length === 0) {
-            setError("Debes agregar al menos un producto antes de confirmar.");
+            setError("Debe agregar al menos un producto al pedido.");
             return;
         }
 
@@ -46,11 +46,9 @@ export default function ResumenPedido({
             setLoading(true);
             setError("");
 
-            // Se adapta la estructura del pedido del frontend al formato esperado por la API
             const payload = {
                 id_mesa: mesaSeleccionada.id_mesa,
-                id_usuario_mesero: usuario.id_usuario, // Utiliza el ID del mesero autenticado
-
+                id_usuario_mesero: usuario.id_usuario,
                 items: itemsPedido.map((item) => ({
                     id_producto: item.id_producto,
                     cantidad: item.cantidad,
@@ -59,10 +57,19 @@ export default function ResumenPedido({
             };
 
             const pedidoCreado = await crearPedido(payload);
-            // Notifica al componente padre que el pedido ya fue confirmado correctamente
             onPedidoConfirmado(pedidoCreado);
         } catch (err) {
-            setError(err?.message || "No se pudo confirmar el pedido.");
+            const mensaje = err?.message || "No se pudo confirmar el pedido.";
+
+            if (mensaje.toLowerCase().includes("mesa no está libre")) {
+                setMesaNoDisponible(true);
+                setError(
+                    "La mesa seleccionada ya fue ocupada por otro pedido. Elige una mesa diferente para continuar."
+                );
+                return;
+            }
+
+            setError(mensaje);
         } finally {
             setLoading(false);
         }
@@ -72,11 +79,64 @@ export default function ResumenPedido({
         return <p className="page-container">Primero debes seleccionar una mesa.</p>;
     }
 
+    if (itemsPedido.length === 0) {
+        return (
+            <div className="dashboard-shell">
+                <HeaderMesero usuario={usuario} onCerrarSesion={onCerrarSesion} />
+
+                <main className="page-container resumen-page">
+                    <button
+                        type="button"
+                        onClick={onVolverAlMenu}
+                        className="back-link resumen-back-link"
+                    >
+                        ← Volver al menú
+                    </button>
+
+                    <section className="resumen-card resumen-empty-card-prototype">
+                        <div className="resumen-header">
+                            <div className="resumen-title-row">
+                                <img
+                                    src={shoppingCartIcon}
+                                    alt=""
+                                    className="resumen-title-icon"
+                                />
+                                <h1 className="resumen-title">Resumen del Pedido</h1>
+                            </div>
+
+                            <p className="resumen-subtitle">
+                                Mesa {mesaSeleccionada.numero_mesa}
+                            </p>
+                        </div>
+
+                        <div className="resumen-empty-content">
+                            <img
+                                src={shoppingCartIcon}
+                                alt=""
+                                className="resumen-empty-cart-icon"
+                            />
+
+                            <p>No hay productos en el pedido</p>
+
+                            <button
+                                type="button"
+                                className="btn btn-primary resumen-add-products-btn"
+                                onClick={onVolverAlMenu}
+                            >
+                                Agregar Productos
+                            </button>
+                        </div>
+                    </section>
+                </main>
+            </div>
+        );
+    }
+
     return (
         <div className="dashboard-shell">
             <HeaderMesero usuario={usuario} onCerrarSesion={onCerrarSesion} />
 
-            <main className="page-container">
+            <main className="page-container resumen-page">
                 <button
                     type="button"
                     onClick={onVolverAlMenu}
@@ -104,53 +164,68 @@ export default function ResumenPedido({
                         </div>
                     </div>
 
-                    {error && <p className="error-text">{error}</p>}
+                    {error && (
+                        <div className={mesaNoDisponible ? "resumen-warning-box" : ""}>
+                            <p className="error-text">
+                                {error}
+                            </p>
+
+                            {mesaNoDisponible && (
+                                <button
+                                    type="button"
+                                    className="btn btn-primary resumen-change-table-btn"
+                                    onClick={onEditarMesa}
+                                >
+                                    Elegir otra mesa
+                                </button>
+                            )}
+                        </div>
+                    )}
 
                     <div className="resumen-items">
-                        {itemsPedido.length === 0 ? (
-                            <div className="empty-state resumen-empty-state">
-                                <p>No hay productos agregados todavía.</p>
-                            </div>
-                        ) : (
-                            itemsPedido.map((item, index) => (
-                                <article
-                                    key={`${item.id_producto}-${index}`}
-                                    className="resumen-item-card"
+                        {itemsPedido.map((item, index) => (
+                            <article
+                                key={`${item.id_producto}-${index}`}
+                                className="resumen-item-card"
+                            >
+                                <div className="resumen-item-main">
+                                    <h3 className="resumen-item-name">
+                                        {item.nombre_producto}
+                                    </h3>
+
+                                    <p className="resumen-item-meta">
+                                        Cantidad: {item.cantidad} × $
+                                        {formatearPrecio(item.precio_unitario)}
+                                    </p>
+
+                                    {item.observacion_item && (
+                                        <div className="item-note">
+                                            <span>Notas: </span>
+                                            <span>{item.observacion_item}</span>
+                                        </div>
+                                    )}
+
+                                    <p className="resumen-item-subtotal">
+                                        ${formatearPrecio(item.subtotal)}
+                                    </p>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    className="resumen-delete-btn"
+                                    onClick={() => eliminarItem(index)}
+                                    disabled={loading}
+                                    aria-label={`Eliminar ${item.nombre_producto}`}
+                                    title="Eliminar producto"
                                 >
-                                    <div className="resumen-item-main">
-                                        <h3 className="resumen-item-name">
-                                            {item.nombre_producto}
-                                        </h3>
-
-                                        <p className="resumen-item-meta">
-                                            Cantidad: {item.cantidad} × $
-                                            {formatearPrecio(item.precio_unitario)}
-                                        </p>
-
-                                        {item.observacion_item && (
-                                            <p className="resumen-item-note">
-                                                Notas: {item.observacion_item}
-                                            </p>
-                                        )}
-
-                                        <p className="resumen-item-subtotal">
-                                            ${formatearPrecio(item.subtotal)}
-                                        </p>
-                                    </div>
-
-                                    <button
-                                        type="button"
-                                        className="resumen-delete-btn"
-                                        onClick={() => eliminarItem(index)}
-                                        disabled={loading}
-                                        aria-label={`Eliminar ${item.nombre_producto}`}
-                                        title="Eliminar producto"
-                                    >
-                                        <img src={trashIcon} alt="" className="resumen-delete-icon" />
-                                    </button>
-                                </article>
-                            ))
-                        )}
+                                    <img
+                                        src={trashIcon}
+                                        alt=""
+                                        className="resumen-delete-icon"
+                                    />
+                                </button>
+                            </article>
+                        ))}
                     </div>
 
                     <div className="resumen-totales">
@@ -179,9 +254,9 @@ export default function ResumenPedido({
                             type="button"
                             className="btn btn-primary resumen-confirm-btn"
                             onClick={confirmarPedido}
-                            disabled={loading || itemsPedido.length === 0}
+                            disabled={loading || mesaNoDisponible}
                         >
-                            {loading ? "Confirmando..." : "Confirmar Pedido"}
+                            {loading ? "Confirmando." : "Confirmar Pedido"}
                         </button>
                     </div>
                 </section>

@@ -6,6 +6,8 @@ import shoppingCartWhiteIcon from "../../assets/shopping-cart-white.png";
 
 const CATEGORIAS = ["ENTRADAS", "HAMBURGUESAS", "BEBIDAS", "ALTERNOS"];
 const OBSERVACION_REGEX = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s.,;:()\-]*$/;
+const MAX_LONGITUD_NOTA = 250;
+const MENSAJE_NOTA_LARGA = "La nota es demasiado larga.";
 
 function formatearCategoria(nombre) {
     if (!nombre) return "";
@@ -18,6 +20,56 @@ function obtenerCategoriaProducto(producto) {
         .toUpperCase();
 }
 
+function validarNotaProducto(valor) {
+    const nota = valor.trim();
+
+    if (nota.length > MAX_LONGITUD_NOTA) {
+        return MENSAJE_NOTA_LARGA;
+    }
+
+    if (nota && !OBSERVACION_REGEX.test(nota)) {
+        return "La nota contiene caracteres no permitidos. Usa solo letras, números y signos básicos.";
+    }
+
+    return "";
+}
+
+function normalizarCantidad(valor) {
+    return String(valor ?? "").trim().replace(/\s+/g, "");
+}
+
+function validarCantidadProducto(valor) {
+    const texto = normalizarCantidad(valor);
+
+    if (!texto) {
+        return "Debes ingresar una cantidad.";
+    }
+
+    if (texto.includes(",") || texto.includes(".")) {
+        return "La cantidad debe ser entera.";
+    }
+
+    if (!/^\d+$/.test(texto)) {
+        return "La cantidad debe contener solo números enteros.";
+    }
+
+    const numero = Number(texto);
+
+    if (numero <= 0) {
+        return "La cantidad debe ser mayor que cero.";
+    }
+
+    if (numero > 99) {
+        return "La cantidad no puede ser mayor que 99.";
+    }
+
+    return "";
+}
+
+function convertirCantidad(valor) {
+    return Number(normalizarCantidad(valor));
+}
+
 export default function MenuProductos({
     usuario,
     mesaSeleccionada,
@@ -26,17 +78,20 @@ export default function MenuProductos({
     onVolver,
     onContinuarResumen,
     onCerrarSesion,
+    mostrarToastMesa,
+    onOcultarToastMesa,
 }) {
     const [productos, setProductos] = useState([]);
     const [busqueda, setBusqueda] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [productoSeleccionado, setProductoSeleccionado] = useState(null);
-    const [cantidad, setCantidad] = useState(1);
+    const [cantidad, setCantidad] = useState("1");
     const [observacion, setObservacion] = useState("");
     const [categoriaActiva, setCategoriaActiva] = useState("ENTRADAS");
     const [errorCantidad, setErrorCantidad] = useState("");
     const [errorObservacion, setErrorObservacion] = useState("");
+    const [productoAgregadoToast, setProductoAgregadoToast] = useState(null);
 
     useEffect(() => {
         async function cargarProductos() {
@@ -54,6 +109,26 @@ export default function MenuProductos({
 
         cargarProductos();
     }, []);
+
+    useEffect(() => {
+        if (!productoAgregadoToast) return;
+
+        const timer = setTimeout(() => {
+            setProductoAgregadoToast(null);
+        }, 2500);
+
+        return () => clearTimeout(timer);
+    }, [productoAgregadoToast]);
+
+    useEffect(() => {
+        if (!mostrarToastMesa) return;
+
+        const timer = setTimeout(() => {
+            onOcultarToastMesa?.();
+        }, 2500);
+
+        return () => clearTimeout(timer);
+    }, [mostrarToastMesa, onOcultarToastMesa]);
 
     const productosFiltrados = useMemo(() => {
         const texto = busqueda.trim().toLowerCase();
@@ -77,7 +152,7 @@ export default function MenuProductos({
         if (producto.disponible !== "S") return;
 
         setProductoSeleccionado(producto);
-        setCantidad(1);
+        setCantidad("1");
         setObservacion("");
         setErrorCantidad("");
         setErrorObservacion("");
@@ -85,7 +160,7 @@ export default function MenuProductos({
 
     function cerrarPersonalizacion() {
         setProductoSeleccionado(null);
-        setCantidad(1);
+        setCantidad("1");
         setObservacion("");
         setErrorCantidad("");
         setErrorObservacion("");
@@ -94,19 +169,26 @@ export default function MenuProductos({
     function agregarAlPedido() {
         if (!productoSeleccionado) return;
 
-        const cantidadValida = Number(cantidad);
-        if (!Number.isInteger(cantidadValida) || cantidadValida <= 0) {
-            setErrorCantidad("No puedes agregar un producto con cantidad cero o menor.");
-            return;
-        }
-        setErrorCantidad("");
-
         const notaLimpia = observacion.trim();
-        if (notaLimpia && !OBSERVACION_REGEX.test(notaLimpia)) {
-            setErrorObservacion("La nota contiene caracteres no permitidos. Usa solo letras, números y signos básicos.");
+        const errorNota = validarNotaProducto(observacion);
+
+        if (errorNota) {
+            setErrorObservacion(errorNota);
             return;
         }
+
         setErrorObservacion("");
+
+        const errorCantidadActual = validarCantidadProducto(cantidad);
+
+        if (errorCantidadActual) {
+            setErrorCantidad(errorCantidadActual);
+            return;
+        }
+
+        const cantidadValida = convertirCantidad(cantidad);
+
+        setErrorCantidad("");
 
         const subtotal = Number(productoSeleccionado.precio) * cantidadValida;
 
@@ -120,6 +202,7 @@ export default function MenuProductos({
         };
 
         setItemsPedido((prev) => [...prev, nuevoItem]);
+        setProductoAgregadoToast(productoSeleccionado.nombre);
         cerrarPersonalizacion();
     }
 
@@ -130,6 +213,20 @@ export default function MenuProductos({
     return (
         <div className="dashboard-shell">
             <HeaderMesero usuario={usuario} onCerrarSesion={onCerrarSesion} />
+
+            {productoAgregadoToast && (
+                <div className="producto-toast" role="status" aria-live="polite">
+                    <span className="producto-toast-icon">✓</span>
+                    <span>{productoAgregadoToast} agregado al pedido</span>
+                </div>
+            )}
+
+            {mostrarToastMesa && mesaSeleccionada && (
+                <div className="mesa-toast" role="status" aria-live="polite">
+                    <span className="mesa-toast-icon">✓</span>
+                    <span>Mesa {mesaSeleccionada.numero_mesa} seleccionada</span>
+                </div>
+            )}
 
             <main className="page-container">
                 <header className="menu-header">
@@ -216,18 +313,14 @@ export default function MenuProductos({
                         <label className="field-label">
                             Cantidad
                             <input
-                                type="number"
-                                min="1"
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
                                 value={cantidad}
                                 onChange={(e) => {
-                                    const nuevoValor = Number(e.target.value);
+                                    const nuevoValor = e.target.value;
                                     setCantidad(nuevoValor);
-
-                                    if (!Number.isInteger(nuevoValor) || nuevoValor <= 0) {
-                                        setErrorCantidad("La cantidad debe ser mayor que cero.");
-                                    } else {
-                                        setErrorCantidad("");
-                                    }
+                                    setErrorCantidad(validarCantidadProducto(nuevoValor));
                                 }}
                                 className="input"
                             />
@@ -245,18 +338,14 @@ export default function MenuProductos({
                                 onChange={(e) => {
                                     const nuevoValor = e.target.value;
                                     setObservacion(nuevoValor);
-
-                                    if (nuevoValor.trim() && !OBSERVACION_REGEX.test(nuevoValor.trim())) {
-                                        setErrorObservacion(
-                                            "La nota contiene caracteres no permitidos. Usa solo letras, números y signos básicos."
-                                        );
-                                    } else {
-                                        setErrorObservacion("");
-                                    }
+                                    setErrorObservacion(validarNotaProducto(nuevoValor));
                                 }}
                                 rows="4"
                                 className="textarea"
                             />
+                            <p className="note-counter">
+                                {observacion.length}/{MAX_LONGITUD_NOTA}
+                            </p>
                         </label>
 
                         {errorObservacion && (
@@ -279,8 +368,8 @@ export default function MenuProductos({
                                 className="btn btn-primary modal-add-btn"
                                 onClick={agregarAlPedido}
                                 disabled={
-                                    (!Number.isInteger(Number(cantidad)) || Number(cantidad) <= 0) ||
-                                    (!!observacion.trim() && !OBSERVACION_REGEX.test(observacion.trim()))
+                                    Boolean(validarCantidadProducto(cantidad)) ||
+                                    !!validarNotaProducto(observacion)
                                 }
                             >
                                 Agregar al pedido

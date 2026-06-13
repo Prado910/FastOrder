@@ -74,7 +74,7 @@ export default function Login({ onLogin }) {
                         />
                     </label>
 
-                    {error && <p className="error-text login-error">{error}</p>}
+                    {error && <p className="login-error">{error}</p>}
 
                     <button
                         type="submit"
@@ -100,6 +100,20 @@ export default function Login({ onLogin }) {
                         onClick={() => cargarUsuarioPrueba("cocina1")}
                     >
                         • cocina1 - Cocina
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => cargarUsuarioPrueba("caja1")}
+                    >
+                        • caja1 - Caja
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => cargarUsuarioPrueba("admin1")}
+                    >
+                        • admin1 - Administrador
                     </button>
 
                     <p>Contraseña: password</p>
