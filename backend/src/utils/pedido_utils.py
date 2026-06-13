@@ -12,5 +12,5 @@ def calcular_subtotal(precio_unitario: Decimal, cantidad: int) -> Decimal:
 
 
 def calcular_total(subtotales: Iterable[Decimal]) -> Decimal:
-    total = sum(Decimal(s) for s in subtotales)
+    total = sum((Decimal(s) for s in subtotales), Decimal("0.00"))
     return total.quantize(Decimal("0.01"))
